@@ -51,67 +51,33 @@ struct LogEntry
   const long line;
 };
 //---------------------------------------------------------------------------------//
-template <typename t_LogTypeInfo> struct LogModuleBase
+struct ConsoleModule
 {
-  const t_LogTypeInfo logType;
-  virtual void write(const LogEntry& p_LogEntry) = 0;
-};
-//---------------------------------------------------------------------------------//
-template <typename t_LogTypeInfo>
-struct ConsoleModule final : LogModuleBase<t_LogTypeInfo>
-{
-  ConsoleModule()
-  {
-  }
-  void write(const LogEntry& p_LogEntry) override
+  static void write(const LogEntry& p_LogEntry)
   {
     std::cout << p_LogEntry.log;
   }
 };
 //---------------------------------------------------------------------------------//
-template <typename t_LogTypeInfo>
-struct DebugOutputModule final : LogModuleBase<t_LogTypeInfo>
+struct DebugOutputModule
 {
-  void write(const LogEntry& p_LogEntry) override
-  {
-  }
-};
-//------------------------------------------------------------------------------//
-template <typename t_LogTypeInfo>
-struct FileModule final : LogModuleBase<t_LogTypeInfo>
-{
-  void write(const LogEntry& p_LogEntry) override
-  {
-    // - Output different files for every log type
-    // - Also output into one file
-  }
-};
-//------------------------------------------------------------------------------//
-template <typename t_Log, typename t_LogTypeInfo> struct BaseLog
-{
-  static std::vector<LogModuleBase<t_LogTypeInfo>*> ms_logModuleList;
-
-  static void addModule(LogModuleBase<t_LogTypeInfo>* p_Module)
-  {
-    ms_logModuleList.push_back(p_Module);
-  }
-
   static void write(const LogEntry& p_LogEntry)
   {
-    callOnce([]() { t_Log::init(); });
-
-    for (LogModuleBase<t_LogTypeInfo>* logModule : ms_logModuleList)
-    {
-      logModule->write(p_LogEntry);
-    }
   }
 };
+//------------------------------------------------------------------------------//
+struct FileModule
+{
+  static void write(const LogEntry& p_LogEntry)
+  {
+  }
+};
+//------------------------------------------------------------------------------//
+template <typename... t_LogTypePack>
+void logTupleWrite(const LogEntry& p_LogEntry)
+{
+  (t_LogTypePack::write(p_LogEntry), ...);
+}
 //---------------------------------------------------------------------------------//
-template <typename t_Log, typename t_LogTypeInfo>
-void BaseLog<t_Log, t_LogTypeInfo>::write(const LogEntry& p_LogEntry);
-template <typename t_Log, typename t_LogTypeInfo>
-std::vector<LogModuleBase<t_LogTypeInfo>*>
-    BaseLog<t_Log, t_LogTypeInfo>::ms_logModuleList;
-//---------------------------------------------------------------------------------//
-} // namespace Log
-} // namespace Foundation
+}; // namespace Log
+}; // namespace Foundation
