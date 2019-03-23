@@ -62,7 +62,6 @@ struct HelperSFINAE
 //-----------------------------------------------------------------------------
 }; // namespace Internal
 //-----------------------------------------------------------------------------
-// TODO: add option for POD and non-POD containers
 template <typename t_Allocator, typename t_Resource,
           uint32_t t_IncrementStep = 1u>
 class SimpleArray

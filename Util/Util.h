@@ -1,5 +1,10 @@
 #pragma once
 
+#include <inttypes.h>
+#include <stdbool.h>
+
+#include <util/WinApi.h>
+
 namespace Foundation
 {
 //-----------------------------------------------------------------------------
@@ -12,5 +17,75 @@ template <typename Functor> void callOnce(Functor functor)
     called = true;
   }
 }
+//-----------------------------------------------------------------------------
+class Mutex
+{
+  ::YH_CRITICAL_SECTION criticalSection;
+
+public:
+  Mutex()
+  {
+    ::InitializeCriticalSectionAndSpinCount(&criticalSection, 128);
+  }
+
+  ~Mutex()
+  {
+    ::DeleteCriticalSection(&criticalSection);
+  }
+
+  friend class ScopedGuard;
+
+private:
+  void Lock()
+  {
+    ::EnterCriticalSection(&criticalSection);
+  }
+  void Unlock()
+  {
+    ::LeaveCriticalSection(&criticalSection);
+  }
+};
+//-----------------------------------------------------------------------------
+class ScopedGuard
+{
+  Mutex& mutex;
+
+  ScopedGuard(const ScopedGuard&);
+  void operator=(const ScopedGuard&);
+
+public:
+  ScopedGuard(Mutex& _mutex) : mutex(_mutex)
+  {
+    mutex.Lock();
+  }
+
+  ~ScopedGuard()
+  {
+    mutex.Unlock();
+  }
+};
+//-----------------------------------------------------------------------------
+// Simple Linear congruential generator
+class LcgRandom
+{
+  uint32_t state;
+
+public:
+  LcgRandom() : state(2578432553)
+  {
+  }
+
+  void SetSeed(uint32_t seed)
+  {
+    state = seed;
+  }
+
+  uint16_t Get()
+  {
+    state = 214013 * state + 2531011;
+    uint16_t rnd = (state >> 16);
+    return rnd;
+  }
+};
 //-----------------------------------------------------------------------------
 } // namespace Foundation

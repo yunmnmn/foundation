@@ -1,3 +1,5 @@
+// By Yun
+
 #pragma once
 
 #include <map>
@@ -28,7 +30,6 @@
 #define GET_LINE() __LINE__
 
 // TODO: Move everything to the CPP file when everything is more defined
-
 namespace Foundation
 {
 namespace Log
