@@ -28,6 +28,7 @@
 #define GET_LINE() __LINE__
 
 // TODO: Move everything to the CPP file when everything is more defined
+
 namespace Foundation
 {
 namespace Log
@@ -51,7 +52,8 @@ struct LogEntry
   const long line;
 };
 //---------------------------------------------------------------------------------//
-struct ConsoleModule
+// Implement the modules correctly
+template <typename t_TypeInfo> struct ConsoleModule
 {
   static void write(const LogEntry& p_LogEntry)
   {
@@ -59,24 +61,24 @@ struct ConsoleModule
   }
 };
 //---------------------------------------------------------------------------------//
-struct DebugOutputModule
+template <typename t_TypeInfo> struct DebugOutputModule
 {
   static void write(const LogEntry& p_LogEntry)
   {
   }
 };
 //------------------------------------------------------------------------------//
-struct FileModule
+template <typename t_TypeInfo> struct FileModule
 {
   static void write(const LogEntry& p_LogEntry)
   {
   }
 };
 //------------------------------------------------------------------------------//
-template <typename... t_LogTypePack>
+template <typename t_TypeInfo, typename... t_LogType>
 void logTupleWrite(const LogEntry& p_LogEntry)
 {
-  (t_LogTypePack::write(p_LogEntry), ...);
+  (t_LogType::template write(p_LogEntry), ...);
 }
 //---------------------------------------------------------------------------------//
 }; // namespace Log
