@@ -3,7 +3,7 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
-#include <util/WinApi.h>
+#include <Windows.h>
 
 namespace Foundation
 {
@@ -20,38 +20,38 @@ template <typename Functor> void callOnce(Functor functor)
 //-----------------------------------------------------------------------------
 class Mutex
 {
-  ::YH_CRITICAL_SECTION criticalSection;
+  RTL_CRITICAL_SECTION criticalSection;
 
 public:
   Mutex()
   {
-    ::InitializeCriticalSectionAndSpinCount(&criticalSection, 128);
+    InitializeCriticalSectionAndSpinCount(&criticalSection, 128);
   }
 
   ~Mutex()
   {
-    ::DeleteCriticalSection(&criticalSection);
+    DeleteCriticalSection(&criticalSection);
   }
+
+  Mutex(const Mutex&) = delete;
+  Mutex& operator=(const Mutex&) = delete;
 
   friend class ScopedGuard;
 
 private:
   void Lock()
   {
-    ::EnterCriticalSection(&criticalSection);
+    EnterCriticalSection(&criticalSection);
   }
   void Unlock()
   {
-    ::LeaveCriticalSection(&criticalSection);
+    LeaveCriticalSection(&criticalSection);
   }
 };
 //-----------------------------------------------------------------------------
 class ScopedGuard
 {
   Mutex& mutex;
-
-  ScopedGuard(const ScopedGuard&);
-  void operator=(const ScopedGuard&);
 
 public:
   ScopedGuard(Mutex& _mutex) : mutex(_mutex)
