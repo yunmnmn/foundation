@@ -80,7 +80,7 @@ public:
       grow(newSize);
     }
 
-    Internal::HelperSFINAE::construct<t_Resource>(m_Data + m_Size);
+    HelperSFINAE::construct<t_Resource>(m_Data + m_Size);
     m_Data[m_Size++] = p_Entry;
   }
 
@@ -92,7 +92,7 @@ public:
       grow(newSize);
     }
 
-    Internal::HelperSFINAE::construct<t_Resource>(m_Data + m_Size);
+    HelperSFINAE::construct<t_Resource>(m_Data + m_Size);
     m_Data[m_Size++] = p_Entry;
   }
 
@@ -208,7 +208,7 @@ private:
     {
       // Copy old data
       // std::copy(m_Data, m_Data + m_Size, mem);
-      Internal::HelperSFINAE::copy(m_Data, m_Data + m_Size, mem);
+      HelperSFINAE::copy(m_Data, m_Data + m_Size, mem);
 
       // Destruct old data
       for (uint32_t i = 0u; i < m_Size; i++)
@@ -242,7 +242,7 @@ private:
     if (m_Data && m_Capacity)
     {
       // Copy old data
-      Internal::HelperSFINAE::copy<t_Resource>(m_Data, m_Data + minSize, mem);
+      HelperSFINAE::copy<t_Resource>(m_Data, m_Data + minSize, mem);
       // std::copy(m_Data, m_Data + minSize, mem);
 
       // Delete old data
@@ -262,24 +262,6 @@ private:
   uint32_t m_Size;
   uint32_t m_Capacity;
   t_Resource* m_Data;
-};
-//-----------------------------------------------------------------------------
-template <typename t_Type> struct Entry
-{
-  uint64_t key;
-  t_Type value;
-  uint32_t next;
-};
-//-----------------------------------------------------------------------------
-const uint32_t MapEnd = (uint32_t)-1;
-struct FindResult
-{
-  FindResult() : hashIndex(MapEnd), dataPrevIndex(MapEnd), dataIndex(MapEnd)
-  {
-  }
-  uint32_t hashIndex;
-  uint32_t dataPrevIndex;
-  uint32_t dataIndex;
 };
 //-----------------------------------------------------------------------------
 }; // namespace Container

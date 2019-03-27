@@ -7,6 +7,24 @@ namespace Foundation
 namespace Container
 {
 //-----------------------------------------------------------------------------
+template <typename t_Type> struct Entry
+{
+  uint64_t key;
+  t_Type value;
+  uint32_t next;
+};
+//-----------------------------------------------------------------------------
+const uint32_t MapEnd = (uint32_t)-1;
+struct FindResult
+{
+  FindResult() : hashIndex(MapEnd), dataPrevIndex(MapEnd), dataIndex(MapEnd)
+  {
+  }
+  uint32_t hashIndex;
+  uint32_t dataPrevIndex;
+  uint32_t dataIndex;
+};
+//-----------------------------------------------------------------------------
 template <typename t_Allocator, typename t_Type, uint32_t t_Capacity>
 class SimpleFixedMap
 {
@@ -175,5 +193,6 @@ private:
   SimpleFixedArray<t_Allocator, EntryType, t_Capacity> m_Data;
   //-----------------------------------------------------------------------------
 };
+//-----------------------------------------------------------------------------
 }; // namespace Container
 }; // namespace Foundation

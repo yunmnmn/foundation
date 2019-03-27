@@ -10,7 +10,8 @@
 #include <util/Util.h>
 #include <Util/MurmurHash3.h>
 #include <Util/HashName.h>
-#include <Container/ContainerTypes.h>
+#include <Container/SimpleFixedArray.h>
+#include <Container/SimpleFixedMap.h>
 
 namespace Foundation
 {
@@ -43,8 +44,8 @@ struct HashName
 private:
   uint64_t m_Hash;
 
-  static Foundation::Container::SimpleFixedArray<
-      HashNameAllocatorInterface, std::string, HashNameMapCapacity>
+  static Foundation::Container::SimpleFixedMap<HashNameAllocatorInterface,
+                                               std::string, HashNameMapCapacity>
       ms_StringRegistery;
 };
 }; // namespace Foundation

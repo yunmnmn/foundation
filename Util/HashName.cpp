@@ -103,8 +103,8 @@ const char* HashName::c_str() const
   return defaultString.c_str();
 }
 //-----------------------------------------------------------------------------
-Foundation::Container::SimpleFixedArray<HashNameAllocatorInterface, std::string,
-                                        HashNameMapCapacity>
+Foundation::Container::SimpleFixedMap<HashNameAllocatorInterface, std::string,
+                                      HashNameMapCapacity>
     HashName::ms_StringRegistery;
 //-----------------------------------------------------------------------------
 }; // namespace Foundation
