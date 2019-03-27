@@ -43,8 +43,8 @@ struct HashName
 private:
   uint64_t m_Hash;
 
-  static Foundation::Container::FixedSimpleMap<HashNameAllocatorInterface,
-                                               std::string, HashNameMapCapacity>
+  static Foundation::Container::SimpleFixedArray<
+      HashNameAllocatorInterface, std::string, HashNameMapCapacity>
       ms_StringRegistery;
 };
 }; // namespace Foundation
