@@ -41,7 +41,7 @@ public:
 
   ~SimpleArray()
   {
-    // TODO: Don't call destructors for non-pod types
+    // TODO: Don't call destructor for non-pod types
     for (uint32_t i = 0u; i < m_Size; i++)
     {
       m_Data[i].~t_Resource();
@@ -76,11 +76,11 @@ public:
   {
     if (m_Size + 1u >= m_Capacity)
     {
-      const uint32_t newSize = m_Capacity + t_IncrementStep;
-      grow(newSize);
+      uint32_t scalar = (uint32_t)((float)m_Capacity * 1.2f);
+      uint32_t newSize = m_Capacity + t_IncrementStep;
+      newSize = (newSize > scalar) ? newSize : scalar;
+      _grow(newSize);
     }
-
-    HelperSFINAE::construct<t_Resource>(m_Data + m_Size);
     m_Data[m_Size++] = p_Entry;
   }
 
@@ -88,18 +88,18 @@ public:
   {
     if (m_Size + 1u >= m_Capacity)
     {
-      const uint32_t newSize = m_Capacity + t_IncrementStep;
-      grow(newSize);
+      uint32_t scalar = (uint32_t)((float)m_Capacity * 1.2f);
+      uint32_t newSize = m_Capacity + t_IncrementStep;
+      newSize = (newSize > scalar) ? newSize : scalar;
+      _grow(newSize);
     }
-
-    HelperSFINAE::construct<t_Resource>(m_Data + m_Size);
     m_Data[m_Size++] = p_Entry;
   }
 
   void pop_back()
   {
     ASSERT(m_Size > 0, "Array is empty");
-    erase(m_Size - 1u);
+    _erase(m_Size - 1u);
     m_Size--;
   }
 
@@ -112,29 +112,23 @@ public:
       // Also bigger than the container?
       if (p_Size >= m_Capacity)
       {
-        grow(p_Size);
+        _grow(p_Size);
       }
-      // Construct new elements
-      for (uint32_t i = m_Size; i < p_Size; i++)
-      {
-        new (m_Data + i) t_Resource();
-      }
-      return;
+    }
+    // Shrink the container
+    else if (p_Size < m_Capacity)
+    {
+      _shrink(p_Size);
     }
 
-    // Shrink the container
-    if (p_Size < m_Capacity)
-    {
-      // Shrink
-      shrink(p_Size);
-    }
+    m_Size = p_Size;
   }
   // Only grows or shrinks the container
   void reserve(uint32_t p_Capacity)
   {
     ASSERT(p_Capacity > m_Capacity,
            "Reserving a smaller capacity than is already available");
-    grow(p_Capacity);
+    _grow(p_Capacity);
   }
   bool empty()
   {
@@ -182,7 +176,7 @@ public:
 
 private:
   //-----------------------------------------------------------------------------
-  void erase(const uint32_t p_Index)
+  void _erase(const uint32_t p_Index)
   {
     ASSERT(p_Index >= m_Size,
            "Trying to erase entry higher than size, index out of bounds");
@@ -190,21 +184,22 @@ private:
   }
   //-----------------------------------------------------------------------------
   // Only grows the container, without modifying m_Size
-  void grow(const uint32_t p_NewCapacity)
+  void _grow(const uint32_t p_NewCapacity)
   {
     const uint64_t totalSize = p_NewCapacity * sizeof(t_Resource);
 
     t_Resource* mem = (t_Resource*)Allocator::allocate(totalSize);
-    ASSERT(mem, "Allocated memory isn't valid");
+    // ASSERT(mem, "Allocated memory isn't valid");
 
     // Note: So, apparently this isn't the same in every standard, so iterate
     // through all objects
     for (uint32_t i = 0u; i < m_Size; i++)
     {
-      new (mem + i) t_Resource();
+      HelperSFINAE::construct<t_Resource>(m_Data + m_Size);
     }
 
-    if (m_Data && m_Capacity && m_Size)
+    ASSERT(m_Data && m_Capacity && m_Size, "Array isn't valid");
+    // if (m_Data && m_Capacity && m_Size)
     {
       // Copy old data
       // std::copy(m_Data, m_Data + m_Size, mem);
@@ -224,7 +219,7 @@ private:
   //-----------------------------------------------------------------------------
   // Re-allocates memory, constructs new elements, copies, destructs. Does
   // modify m_Size if the new capacity is smaller than current m_Size
-  void shrink(const uint32_t p_NewCapacity)
+  void _shrink(const uint32_t p_NewCapacity)
   {
     const uint64_t totalSize = p_NewCapacity * sizeof(t_Resource);
 

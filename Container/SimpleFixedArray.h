@@ -39,9 +39,9 @@ public:
 
   ~SimpleFixedArray()
   {
-    // Call all the destructors
+    // Call all the destructor
     clear();
-    m_Capacity = 0u;
+    m_Size = 0u;
   }
 
   void push_back(const t_Resource& p_Entry)
@@ -52,9 +52,27 @@ public:
     m_Data[m_Size++] = p_Entry;
   }
 
+  void pop_back()
+  {
+    ASSERT(m_Size >= 0u, "Fixed Array is empty");
+
+    // TODO: call destructor?
+    m_Size--;
+  }
+
   void resize(uint32_t p_Size)
   {
-    ASSERT(p_Size > m_Size, "Resizing failed, given size is too large");
+    ASSERT(p_Size <= m_Capacity, "Resizing failed, given size is too large");
+
+    if (p_Size > m_Size)
+    {
+      _grow(p_Size);
+    }
+    else if (p_Size < m_Size)
+    {
+      _shrink(p_Size);
+    }
+
     m_Size = p_Size;
   }
 
@@ -77,13 +95,13 @@ public:
 
   t_Resource& back()
   {
-    // TODO: insert return statement here
+    ASSERT(m_Size, "Array is empty");
     return m_Data[m_Size - 1u];
   }
 
   const t_Resource& back() const
   {
-    // TODO: insert return statement here
+    ASSERT(m_Size, "Array is empty");
     return m_Data[m_Size - 1u];
   }
 
@@ -94,6 +112,23 @@ public:
       m_Data[i].~t_Resource();
     }
     m_Size = 0u;
+  }
+
+private:
+  void _grow(const uint32_t p_Size)
+  {
+    for (uint32_t i = m_Size; i < p_Size; i++)
+    {
+      HelperSFINAE::construct<t_Resource>()
+    }
+  }
+
+  void _shrink(const uint32_t p_Size)
+  {
+    for (uint32_t i = m_Size - 1u; i >= p_Size; i--)
+    {
+      m_Data[i].~t_Resource();
+    }
   }
 
   uint32_t m_Size;
