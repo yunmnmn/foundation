@@ -15,14 +15,13 @@ class SimpleFixedArray
                 "because allocator<const T> is ill-formed.");
 
 public:
-  SimpleFixedArray() : m_Size(0u), m_Capacity(t_Capacity), m_Data(nullptr)
+  SimpleFixedArray() : m_Size(0u), m_Data(nullptr)
   {
-    uint64_t allocatedSize = t_Capacity * sizeof(t_Resource);
+    uint64_t allocatedSize = Capacity * sizeof(t_Resource);
     m_Data = (t_Resource*)t_Allocator::allocate(allocatedSize);
 
     ASSERT(m_Data, "Memory allocation failed");
 
-    m_Capacity = t_Capacity;
     m_Size = 0u;
   }
 
@@ -46,9 +45,8 @@ public:
 
   void push_back(const t_Resource& p_Entry)
   {
-    ASSERT(m_Size <= m_Capacity, "Fixed Array is full");
+    ASSERT(m_Size <= Capacity, "Fixed Array is full");
 
-    new (m_Data + m_Size) t_Resource();
     m_Data[m_Size++] = p_Entry;
   }
 
@@ -56,13 +54,13 @@ public:
   {
     ASSERT(m_Size >= 0u, "Fixed Array is empty");
 
-    // TODO: call destructor?
+    HelperSFINAE::destruct(m_Data + m_Size - 1u);
     m_Size--;
   }
 
   void resize(uint32_t p_Size)
   {
-    ASSERT(p_Size <= m_Capacity, "Resizing failed, given size is too large");
+    ASSERT(p_Size <= Capacity, "Resizing failed, given size is too large");
 
     if (p_Size > m_Size)
     {
@@ -70,6 +68,7 @@ public:
     }
     else if (p_Size < m_Size)
     {
+      ASSERT(m_Size, "Array is empty");
       _shrink(p_Size);
     }
 
@@ -107,34 +106,42 @@ public:
 
   void clear()
   {
-    for (uint32_t i = 0u; i < m_Size; i++)
-    {
-      m_Data[i].~t_Resource();
-    }
+    HelperSFINAE::destructRanged<t_Resource>(&m_Data[0], &m_Data[m_Size]);
     m_Size = 0u;
   }
+
+  void* data()
+  {
+    return m_Data;
+  }
+
+  friend void copy(SimpleFixedArray& p_Source, SimpleFixedArray& p_Dest);
 
 private:
   void _grow(const uint32_t p_Size)
   {
-    for (uint32_t i = m_Size; i < p_Size; i++)
-    {
-      HelperSFINAE::construct<t_Resource>()
-    }
+    HelperSFINAE::constructRanged<t_Resource>(&m_Data[m_Size], &m_Data[p_Size]);
   }
 
   void _shrink(const uint32_t p_Size)
   {
-    for (uint32_t i = m_Size - 1u; i >= p_Size; i--)
-    {
-      m_Data[i].~t_Resource();
-    }
+    HelperSFINAE::destructRanged<t_Resource>(&m_Data[p_Size], &m_Data[m_Size]);
   }
 
   uint32_t m_Size;
-  uint32_t m_Capacity;
+  const uint32_t Capacity = t_Capacity;
   t_Resource* m_Data;
 };
+//-----------------------------------------------------------------------------
+template <typename t_Allocator, typename t_Type, uint32_t t_Capacity>
+void copy(SimpleFixedArray<t_Allocator, t_Type, t_Capacity>& p_Dest,
+          SimpleFixedArray<t_Allocator, t_Type, t_Capacity>& p_Source)
+{
+  HelperSFINAE::copy(p_Source.data(), p_Source.data() + p_Source.size(),
+                     p_Dest.data());
+
+  p_Dest.m_Size = p_Source.m_Size;
+}
 //-----------------------------------------------------------------------------
 }; // namespace Container
 }; // namespace Foundation

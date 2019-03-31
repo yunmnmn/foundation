@@ -1,6 +1,7 @@
 #include <Memory/Allocator.h>
+#include <util/Assert.h>
 
-#include <mutex>
+#include <mutex> // For free, malloc etc
 
 namespace Foundation
 {
@@ -19,6 +20,7 @@ TlsfAllocator::TlsfAllocator(const uint64_t p_Bytes)
 //-----------------------------------------------------------------------------
 TlsfAllocator::~TlsfAllocator()
 {
+  // Todo: deallocate
 }
 //-----------------------------------------------------------------------------
 void* TlsfAllocator::allocate(const uint64_t p_Bytes, const int32_t p_Flags)
@@ -41,72 +43,66 @@ void TlsfAllocator::free(void* p_Memory, const uint64_t p_Size)
 //-----------------------------------------------------------------------------
 // LinearAllocator
 //-----------------------------------------------------------------------------
-LinearAllocator::LinearAllocator(const uint64_t p_SizeInBytes)
+template <bool t_RingFeature>
+LinearAllocator<t_RingFeature>::LinearAllocator(const uint64_t p_SizeInBytes)
     : m_CapacityInBytes(0u), m_offsetInBytes(0u), m_Data(nullptr)
 {
   m_Data = malloc(p_SizeInBytes);
-  // TODO: assert
+  ASSERT(m_Data, "Allocated memory isn't valid");
 
   m_CapacityInBytes = p_SizeInBytes;
 }
 //-----------------------------------------------------------------------------
-LinearAllocator::~LinearAllocator()
+template <bool t_RingFeature> LinearAllocator<t_RingFeature>::~LinearAllocator()
 {
-  if (m_Data)
-  {
-    ::free(m_Data);
-    m_Data = nullptr;
-    m_CapacityInBytes = 0u;
-    m_offsetInBytes = 0u;
-  }
+  ASSERT(m_Data, "No memory allocated");
+
+  ::free(m_Data);
+  m_Data = nullptr;
+  m_CapacityInBytes = 0u;
+  m_offsetInBytes = 0u;
 }
 //-----------------------------------------------------------------------------
-void* LinearAllocator::allocate(const uint64_t p_SizeInBytes,
-                                const int32_t p_Flags)
+template <bool t_RingFeature>
+void* LinearAllocator<t_RingFeature>::allocate(const uint64_t p_SizeInBytes,
+                                               const int32_t p_Flags)
 {
-  if (m_offsetInBytes + p_SizeInBytes > m_CapacityInBytes)
+  if constexpr (t_RingFeature)
   {
-    // assert here
+    ASSERT(p_SizeInBytes <= m_CapacityInBytes,
+           "Don't call free on a linear allocator");
+
+    if (m_offsetInBytes + p_SizeInBytes > m_CapacityInBytes)
+    {
+      m_offsetInBytes = 0u;
+    }
   }
+  else
+  {
+    ASSERT(m_offsetInBytes + p_SizeInBytes <= m_CapacityInBytes,
+           "Don't call free on a linear allocator");
+  }
+
   void* mem = (void*)((uint8_t*)m_Data + m_offsetInBytes);
   m_offsetInBytes = p_SizeInBytes;
+
   return mem;
 }
 //-----------------------------------------------------------------------------
-void* LinearAllocator::allocateAligned(const uint64_t p_Bytes,
-                                       const uint32_t p_Alignment,
-                                       const uint32_t p_Offset,
-                                       const int32_t p_Flags)
+template <bool t_RingFeature>
+void* LinearAllocator<t_RingFeature>::allocateAligned(
+    const uint64_t p_Bytes, const uint32_t p_Alignment, const uint32_t p_Offset,
+    const int32_t p_Flags)
 {
   return nullptr;
 }
 //-----------------------------------------------------------------------------
-void LinearAllocator::free(void* p_Memory, const uint64_t p_SizeInBytes)
+template <bool t_RingFeature>
+void LinearAllocator<t_RingFeature>::free(void* p_Memory,
+                                          const uint64_t p_SizeInBytes)
 {
-  // Yeah... Don't do this, unless it's the last entry
+  ASSERT(false, "Don't call free on a linear allocator");
 }
-// struct LinearAllocatorMarker
-//{
-//  LinerAllocator* m_LinearAllocator;
-//  uint64_t m_allocatorMarker = 0u;
-//
-//  LinearAllocatorMarker(LinerAllocator& p_LinearAllocatorMarker)
-//      : m_allocatorMarker(p_LinearAllocatorMarker.m_dataPosition),
-//        m_LinearAllocator(&p_LinearAllocatorMarker)
-//  {
-//  }
-//
-//  ~LinearAllocatorMarker()
-//  {
-//    m_LinearAllocator->m_dataPosition = m_allocatorMarker;
-//  }
-//};
-//
-//-----------------------------------------------------------------------------
-// template <AllocatorType type, size_t bytes, typename Allocator>
-// Allocator* EastlAllocator<type, bytes, Allocator>::ms_allocator;
-// template <AllocatorType type, size_t bytes, typename Allocator>
-// std::once_flag EastlAllocator<type, bytes, Allocator>::m_initializeFlag;
 //-----------------------------------------------------------------------------
 }; // namespace Memory
 }; // namespace Foundation

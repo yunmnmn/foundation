@@ -6,7 +6,7 @@
 
 namespace Foundation
 {
-namespace Containers
+namespace Container
 {
 //-----------------------------------------------------------------------------
 template <typename t_Allocator, typename t_Type, uint32_t t_Capacity>
@@ -14,21 +14,14 @@ struct SimpleFixedQueue
 {
   struct Node
   {
-    Node* prev;
+    uint32_t prev;
     t_Type data;
-    Node* next;
+    uint32_t next;
 
     uint32_t index;
   };
 
-  SimpleFixedArray<t_Allocator, Node, t_Capacity> m_DataContainer;
-  SimpleFixedArray<t_Allocator, uint32_t, t_Capacity> m_IndexContainer;
-  uint32_t m_Size;
-  const uint32_t Capacity = t_Capacity;
-  Node* m_Head;
-  Node* m_Tail;
-
-  SimpleFixedQueue() : m_Head(nullptr), m_Tail(nullptr), m_Size(0u)
+  SimpleFixedQueue() : m_Head(Empty), m_Tail(Empty), m_Size(0u)
   {
     m_IndexContainer.resize(Capacity);
     m_DataContainer.resize(Capacity);
@@ -39,8 +32,9 @@ struct SimpleFixedQueue
     }
   }
 
-  ~SimpleFixedQueue();
+  ~SimpleFixedQueue()
   {
+    clear();
   }
 
   void enqueueBack(const t_Type& p_Entry)
@@ -53,16 +47,16 @@ struct SimpleFixedQueue
     node.index = index;
     node.data = p_Entry;
 
-    Node* prev = m_Tail;
-    m_Tail = node;
+    uint32_t prev = m_Tail;
+    m_Tail = node.index;
 
     node.prev = prev;
-    node.next = nullptr;
+    node.next = Empty;
 
     // Should only happen when the queue is empty
-    if (m_Head == nullptr)
+    if (m_Head == Empty)
     {
-      m_Head = node;
+      m_Head = node.index;
       ASSERT(m_Size == 0u, "Queue isn't empty");
     }
     m_Size++;
@@ -78,14 +72,14 @@ struct SimpleFixedQueue
     node.index = index;
     node.data = p_Entry;
 
-    Node* prev = m_Head;
-    m_Head = node;
+    uint32_t prev = m_Head;
+    m_Head = node.index;
 
-    node.prev = nullptr;
+    node.prev = Empty;
     node.next = prev;
 
     // Should only happen when the queue is empty
-    if (m_Tail == nullptr)
+    if (m_Tail == Empty)
     {
       m_Tail = node;
       ASSERT(m_Size == 0u, "Queue isn't empty");
@@ -93,7 +87,7 @@ struct SimpleFixedQueue
     m_Size++;
   }
 
-  bool dequeueBack(t_Type* p_Entry)
+  bool dequeueBack(t_Type& p_Entry)
   {
     if (!m_Size)
     {
@@ -101,11 +95,12 @@ struct SimpleFixedQueue
       return false;
     }
 
-    Node* back = m_Tail;
-    p_Entry = back;
+    Node& tail = m_DataContainer[m_Tail];
+    p_Entry = tail.data;
+    m_Tail = tail.prev;
 
-    m_Tail = back.prev;
-
+    m_IndexContainer.push_back(tail.index);
+    HelperSFINAE::destruct(m_DataContainer + tail.index);
     m_Size--;
     return true;
   }
@@ -118,22 +113,57 @@ struct SimpleFixedQueue
       return false;
     }
 
-    Node* head = m_Head;
-    p_Entry = head;
-
+    Node& head = m_DataContainer[m_Head];
+    p_Entry = head.data;
     m_Head = head.next;
 
+    m_IndexContainer.push_back(head.index);
+    HelperSFINAE::destruct(m_DataContainer + head.index);
     m_Size--;
     return true;
   }
 
   void clear()
   {
-    // TODO: call destructor?
+    m_DataContainer.clear();
+    m_IndexContainer.clear();
+    for (uint32_t i = 0u; i < Capacity; i++)
+    {
+      m_IndexContainer[i] = i;
+    }
+    m_Size = 0u;
+    m_Head = Empty;
+    m_Tail = Empty;
   }
 
+  const uint32_t size() const
+  {
+    return m_Size;
+  }
+
+  friend void copy(SimpleFixedQueue& p_Source, SimpleFixedQueue& p_Dest);
+
 private:
+  ::Foundation::Container::SimpleFixedArray<t_Allocator, Node, t_Capacity>
+      m_DataContainer;
+  ::Foundation::Container::SimpleFixedArray<t_Allocator, uint32_t, t_Capacity>
+      m_IndexContainer;
+  uint32_t m_Size;
+  const uint32_t Capacity = t_Capacity;
+  uint32_t m_Head;
+  uint32_t m_Tail;
 };
 //-----------------------------------------------------------------------------
-}; // namespace Containers
+template <typename t_Allocator, typename t_Type, uint32_t t_Capacity>
+void copy(SimpleFixedQueue<t_Allocator, t_Type, t_Capacity>& p_Dest,
+          SimpleFixedQueue<t_Allocator, t_Type, t_Capacity>& p_Source)
+{
+  Container::copy(p_Dest.m_DataContainer, p_Source.m_DataContainer);
+
+  p_Dest.m_Size = p_Source.m_Size;
+  p_Dest.m_Head = p_Source.m_Head;
+  p_Dest.m_Tail = p_Source.m_Tail;
+}
+//-----------------------------------------------------------------------------
+}; // namespace Container
 }; // namespace Foundation

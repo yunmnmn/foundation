@@ -33,7 +33,7 @@ class SimpleFixedMap
 public:
   SimpleFixedMap()
   {
-    invalidateHash();
+    _invalidateHash();
     ASSERT(t_Capacity < MapEnd,
            "Hashed to max uint64_t, this isn't good... Why would you even make "
            "this large of a hash map?");
@@ -41,20 +41,20 @@ public:
   //-----------------------------------------------------------------------------
   void set(const uint64_t m_Key, const t_Type& p_Value)
   {
-    ASSERT(m_Data.size() <= m_Data.m_Capacity, "Fixed map is full");
+    ASSERT(m_Data.size() <= t_Capacity, "Fixed map is full");
 
-    uint32_t dataIndex = findOrMake(m_Key);
+    uint32_t dataIndex = _findOrMake(m_Key);
     m_Data[dataIndex].value = p_Value;
   }
   //-----------------------------------------------------------------------------
   const bool has(const uint64_t p_Key) const
   {
-    return find(p_Key).dataIndex != MapEnd;
+    return _find(p_Key).dataIndex != MapEnd;
   }
   //-----------------------------------------------------------------------------
   t_Type& get(const uint64_t p_Key, t_Type& p_Default)
   {
-    FindResult res = find(p_Key);
+    FindResult res = _find(p_Key);
     if (res.dataIndex != MapEnd)
     {
       return m_Data[res.dataIndex].value;
@@ -65,26 +65,26 @@ public:
   //-----------------------------------------------------------------------------
   void remove(const uint64_t p_Key)
   {
-    findAndErase(p_Key);
+    _findAndErase(p_Key);
   }
   //-----------------------------------------------------------------------------
   void clear()
   {
-    invalidateHash();
+    _invalidateHash();
     t_Capacity.clear();
   }
   //-----------------------------------------------------------------------------
 private:
-  void invalidateHash()
+  void _invalidateHash()
   {
-    m_Hash.resize(m_Hash.m_Capacity);
-    for (uint32_t i = 0u; i < m_Hash.m_Size; i++)
+    m_Hash.resize(t_Capacity);
+    for (uint32_t i = 0u; i < m_Hash.size(); i++)
     {
       m_Hash[i] = MapEnd;
     }
   }
   //-----------------------------------------------------------------------------
-  FindResult find(const uint64_t p_Key)
+  FindResult _find(const uint64_t p_Key)
   {
     FindResult findResult;
 
@@ -110,7 +110,7 @@ private:
     return findResult;
   }
   //-----------------------------------------------------------------------------
-  uint32_t addEntry(const uint64_t p_Key)
+  uint32_t _addEntry(const uint64_t p_Key)
   {
     EntryType entry;
     entry.key = p_Key;
@@ -121,7 +121,7 @@ private:
     return dataIndex;
   }
   //-----------------------------------------------------------------------------
-  void erase(const FindResult& p_FindResult)
+  void _erase(const FindResult& p_FindResult)
   {
     // Manage hash array
     // If first entry in the linked list
@@ -139,7 +139,7 @@ private:
     }
 
     // Call destructor
-    // TODO: not sure if detructor is called
+    // TODO: not sure if destructor is called
     m_Data[p_FindResult.dataIndex].value.~t_Type();
 
     // Swap entries
@@ -155,15 +155,15 @@ private:
     }
   }
   //-----------------------------------------------------------------------------
-  uint32_t findOrMake(const uint64_t p_Key)
+  uint32_t _findOrMake(const uint64_t p_Key)
   {
-    const FindResult findResult = find(p_Key);
+    const FindResult findResult = _find(p_Key);
     if (findResult.dataIndex != MapEnd)
     {
       return findResult.dataIndex;
     }
 
-    const uint32_t dataIndex = addEntry(p_Key);
+    const uint32_t dataIndex = _addEntry(p_Key);
     // If the current DataIndex is not used
     if (findResult.dataPrevIndex == MapEnd)
     {
@@ -180,12 +180,12 @@ private:
     return dataIndex;
   }
   //-----------------------------------------------------------------------------
-  void findAndErase(const uint64_t p_Key)
+  void _findAndErase(const uint64_t p_Key)
   {
-    const FindResult res = find(p_Key);
+    const FindResult res = _find(p_Key);
     if (res.dataIndex != MapEnd)
     {
-      erase(res);
+      _erase(res);
     }
   }
   //-----------------------------------------------------------------------------
