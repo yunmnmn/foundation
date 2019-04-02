@@ -6,6 +6,9 @@
 #include <util/Assert.h>
 #include <Container/SimpleFixedQueue.h>
 
+using namespace rapidjson;
+using namespace std;
+
 namespace fs = std::experimental::filesystem;
 
 namespace Foundation
@@ -21,10 +24,10 @@ void FileSystem::init()
 {
 }
 //-----------------------------------------------------------------------------
-void FileSystem::enqueueLoadRequest(FileRequestDecl*& p_FiberRequestDecl,
+void FileSystem::enqueueLoadRequest(FileRequestDecl** p_FiberRequestDecl,
                                     uint32_t p_Count)
 {
-  Foundation::ScopedGuard(ms_QueueMutex);
+  Foundation::ScopedGuard guard(ms_QueueMutex);
   for (uint32_t i = 0u; i < p_Count; i++)
   {
     ms_Queue.enqueueBack(p_FiberRequestDecl[p_Count]);
@@ -42,15 +45,16 @@ void FileSystem::processLoadRequestAndSleep()
 void FileSystem::processLoadRequests()
 {
   {
-    Foundation::ScopedGuard(ms_QueueMutex);
+    Foundation::ScopedGuard guard(ms_QueueMutex);
+
     ms_ProcessQueue.clear();
     // Copy queue
-    Container::copy(ms_ProcessQueue, ms_Queue);
+    ms_ProcessQueue = ms_Queue;
     ms_Queue.clear();
   }
 
   FileRequestDecl* fberRequestDecl;
-  while (ms_ProcessQueue.dequeueFront(&fberRequestDecl))
+  while (ms_ProcessQueue.dequeueFront(fberRequestDecl))
   {
     fberRequestDecl->sizeInBytes =
         _readFile(fberRequestDecl->filePath, fberRequestDecl->buffer);
@@ -80,6 +84,9 @@ uint32_t FileSystem::_readFile(const char* p_Path, void* p_Buffer)
   {
     /* worked! */
   }
+
+  // ISStreamWrapper isw;
+  return 0u;
 }
 //-----------------------------------------------------------------------------
 }; // namespace FiberSystem

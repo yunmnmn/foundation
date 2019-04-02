@@ -115,9 +115,15 @@ public:
     return m_Data;
   }
 
-  friend void copy(SimpleFixedArray& p_Source, SimpleFixedArray& p_Dest);
+  void operator=(const SimpleFixedArray& p_SimpleFixedArray)
+  {
+    HelperSFINAE::copy<t_Resource>(p_SimpleFixedArray.m_Data,
+                                   p_SimpleFixedArray.m_Data + Capacity,
+                                   m_Data);
+    m_Size = p_SimpleFixedArray.m_Size;
+  }
 
-private:
+  // TODO: private
   void _grow(const uint32_t p_Size)
   {
     HelperSFINAE::constructRanged<t_Resource>(&m_Data[m_Size], &m_Data[p_Size]);
@@ -128,20 +134,11 @@ private:
     HelperSFINAE::destructRanged<t_Resource>(&m_Data[p_Size], &m_Data[m_Size]);
   }
 
+private:
   uint32_t m_Size;
   const uint32_t Capacity = t_Capacity;
   t_Resource* m_Data;
 };
-//-----------------------------------------------------------------------------
-template <typename t_Allocator, typename t_Type, uint32_t t_Capacity>
-void copy(SimpleFixedArray<t_Allocator, t_Type, t_Capacity>& p_Dest,
-          SimpleFixedArray<t_Allocator, t_Type, t_Capacity>& p_Source)
-{
-  HelperSFINAE::copy(p_Source.data(), p_Source.data() + p_Source.size(),
-                     p_Dest.data());
-
-  p_Dest.m_Size = p_Source.m_Size;
-}
 //-----------------------------------------------------------------------------
 }; // namespace Container
 }; // namespace Foundation

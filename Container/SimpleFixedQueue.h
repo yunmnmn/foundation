@@ -37,13 +37,13 @@ struct SimpleFixedQueue
     clear();
   }
 
-  void enqueueBack(const t_Type& p_Entry)
+  void enqueueBack(t_Type& p_Entry)
   {
     uint32_t index = m_IndexContainer.back();
     m_IndexContainer.pop_back();
 
     Node& node = m_DataContainer[index];
-    HelperSFINAE::construct<Node>(node);
+    HelperSFINAE::construct<Node>(&node);
     node.index = index;
     node.data = p_Entry;
 
@@ -62,13 +62,13 @@ struct SimpleFixedQueue
     m_Size++;
   }
 
-  void enqueueFront(const t_Type& p_Entry)
+  void enqueueFront(t_Type& p_Entry)
   {
     uint32_t index = m_IndexContainer.back();
     m_IndexContainer.pop_back();
 
     Node& node = m_DataContainer[index];
-    HelperSFINAE::construct<Node>(node);
+    HelperSFINAE::construct<Node>(&node);
     node.index = index;
     node.data = p_Entry;
 
@@ -100,7 +100,7 @@ struct SimpleFixedQueue
     m_Tail = tail.prev;
 
     m_IndexContainer.push_back(tail.index);
-    HelperSFINAE::destruct(m_DataContainer + tail.index);
+    HelperSFINAE::destruct<Node>(&m_DataContainer[tail.index]);
     m_Size--;
     return true;
   }
@@ -118,7 +118,7 @@ struct SimpleFixedQueue
     m_Head = head.next;
 
     m_IndexContainer.push_back(head.index);
-    HelperSFINAE::destruct(m_DataContainer + head.index);
+    HelperSFINAE::destruct<Node>(&m_DataContainer[head.index]);
     m_Size--;
     return true;
   }
@@ -141,29 +141,24 @@ struct SimpleFixedQueue
     return m_Size;
   }
 
-  friend void copy(SimpleFixedQueue& p_Source, SimpleFixedQueue& p_Dest);
+  void operator=(const SimpleFixedQueue& p_SimpleFixedQueue)
+  {
+    m_DataContainer = p_SimpleFixedQueue.m_DataContainer;
+    m_IndexContainer = p_SimpleFixedQueue.m_IndexContainer;
+    m_Size = p_SimpleFixedQueue.m_Size;
+    m_Head = p_SimpleFixedQueue.m_Head;
+    m_Tail = p_SimpleFixedQueue.m_Tail;
+  }
 
 private:
-  ::Foundation::Container::SimpleFixedArray<t_Allocator, Node, t_Capacity>
-      m_DataContainer;
-  ::Foundation::Container::SimpleFixedArray<t_Allocator, uint32_t, t_Capacity>
+  Container::SimpleFixedArray<t_Allocator, Node, t_Capacity> m_DataContainer;
+  Container::SimpleFixedArray<t_Allocator, uint32_t, t_Capacity>
       m_IndexContainer;
   uint32_t m_Size;
   const uint32_t Capacity = t_Capacity;
   uint32_t m_Head;
   uint32_t m_Tail;
 };
-//-----------------------------------------------------------------------------
-template <typename t_Allocator, typename t_Type, uint32_t t_Capacity>
-void copy(SimpleFixedQueue<t_Allocator, t_Type, t_Capacity>& p_Dest,
-          SimpleFixedQueue<t_Allocator, t_Type, t_Capacity>& p_Source)
-{
-  Container::copy(p_Dest.m_DataContainer, p_Source.m_DataContainer);
-
-  p_Dest.m_Size = p_Source.m_Size;
-  p_Dest.m_Head = p_Source.m_Head;
-  p_Dest.m_Tail = p_Source.m_Tail;
-}
 //-----------------------------------------------------------------------------
 }; // namespace Container
 }; // namespace Foundation

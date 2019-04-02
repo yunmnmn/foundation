@@ -6,11 +6,44 @@
 #include <algorithm>
 
 #include <Util/Assert.h>
+#include <Memory/Allocator.h>
 
 namespace Foundation
 {
 namespace Container
 {
+//-----------------------------------------------------------------------------
+struct Allocators
+{
+  static Foundation::Memory::TlsfAllocator ms_DynamicResourceAllocator;
+};
+//-----------------------------------------------------------------------------
+class DefaultContainerAllocatorInterface
+{
+public:
+  DefaultContainerAllocatorInterface() = default;
+  ~DefaultContainerAllocatorInterface() = default;
+
+  static void* allocate(const uint64_t p_SizeInBytes)
+  {
+    return Foundation::Container::Allocators::ms_DynamicResourceAllocator
+        .allocate(p_SizeInBytes, 0);
+  }
+
+  static void* allocateAligned(const uint64_t p_SizeInBytes,
+                               const uint32_t p_Allignment,
+                               const uint32_t p_Offset)
+  {
+    return Foundation::Container::Allocators::ms_DynamicResourceAllocator
+        .allocateAligned(p_SizeInBytes, p_Allignment, p_Offset, 0);
+  }
+
+  static void free(void* p_Memory, uint64_t p_SizeInBytes)
+  {
+    return Foundation::Container::Allocators::ms_DynamicResourceAllocator.free(
+        p_Memory, p_SizeInBytes);
+  }
+};
 //-----------------------------------------------------------------------------
 // TODO: Define default containers with their sizes?
 //-----------------------------------------------------------------------------

@@ -3,7 +3,7 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
-#include <tlsf/tlsf.h>
+#include <util/Assert.h>
 
 namespace Foundation
 {
@@ -47,19 +47,65 @@ private:
   uint8_t* m_ShadowMemory;
 };
 //-----------------------------------------------------------------------------
-template <bool t_RingFeature = false> class LinearAllocator
+template <bool t_RingFeature> class LinearAllocator
 {
   friend Helper::AllocatorMarker<LinearAllocator>;
 
 public:
-  LinearAllocator(const uint64_t p_SizeInBytes);
-  ~LinearAllocator();
+  LinearAllocator(const uint64_t p_SizeInBytes)
+  {
+    m_Data = malloc(p_SizeInBytes);
+    ASSERT(m_Data, "Allocated memory isn't valid");
 
-  void* allocate(const uint64_t p_SizeInBytes, const int32_t p_Flags);
+    m_CapacityInBytes = p_SizeInBytes;
+  }
+
+  ~LinearAllocator()
+  {
+    ASSERT(m_Data, "No memory allocated");
+
+    ::free(m_Data);
+    m_Data = nullptr;
+    m_CapacityInBytes = 0u;
+    m_offsetInBytes = 0u;
+  }
+
+  void* allocate(const uint64_t p_SizeInBytes, const int32_t p_Flags)
+  {
+    if constexpr (t_RingFeature)
+    {
+      ASSERT(p_SizeInBytes <= m_CapacityInBytes,
+             "Don't call free on a linear allocator");
+
+      if (m_offsetInBytes + p_SizeInBytes > m_CapacityInBytes)
+      {
+        m_offsetInBytes = 0u;
+      }
+    }
+    else
+    {
+      ASSERT(m_offsetInBytes + p_SizeInBytes <= m_CapacityInBytes,
+             "Don't call free on a linear allocator");
+    }
+
+    void* mem = (void*)((uint8_t*)m_Data + m_offsetInBytes);
+    m_offsetInBytes = p_SizeInBytes;
+
+    return mem;
+  }
+
   void* allocateAligned(const uint64_t p_SizeInBytes,
                         const uint32_t p_Alignment, const uint32_t p_Offset,
-                        const int32_t p_Flags);
-  void free(void* p_Memory, const uint64_t p_SizeInBytes);
+                        const int32_t p_Flags)
+  {
+    // TODO: implement this
+    return nullptr;
+  }
+
+  void free(void* p_Memory, const uint64_t p_SizeInBytes)
+  {
+    ASSERT(false, "Don't call free on a linear allocator");
+  }
 
 private:
   void* m_Data;

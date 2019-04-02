@@ -5,11 +5,13 @@
 #include <experimental/filesystem>
 
 #include <Util/Util.h>
+#include <Container/SimpleFixedQueue.h>
 
 namespace std
 {
 template <typename t_Type> struct atomic;
 }
+
 namespace Foundation
 {
 namespace FiberSystem
@@ -31,11 +33,12 @@ struct FileRequestDecl
 //-----------------------------------------------------------------------------
 struct FileSystem
 {
-  using FileSystemQueue =
-      Container::SimpleFixedQueue<t_Allocator, FileRequestDecl*, 128u>;
+  using FileSystemQueue = Container::SimpleFixedQueue<
+      Foundation::Container::DefaultContainerAllocatorInterface,
+      FileRequestDecl*, 128u>;
   // TODO: Create event
   static void init();
-  static void enqueueLoadRequest(FileRequestDecl*& p_FiberRequestDecl,
+  static void enqueueLoadRequest(FileRequestDecl** p_FiberRequestDecl,
                                  uint32_t p_Count);
 
   // Processes load requests; if any, else sleep till event gets called

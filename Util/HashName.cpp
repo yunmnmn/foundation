@@ -14,35 +14,36 @@ const uint64_t KiloByte = sizeof(uint8_t) * 1024u;
 const uint64_t MegaByte = KiloByte * 1024u;
 const uint64_t HashNameMemoryCapacity = MegaByte;
 //-----------------------------------------------------------------------------
-// Allocate all the resources here
-::Foundation::Memory::LinearAllocator
-    g_ResourceAllocator(HashNameMemoryCapacity);
+//// Allocate all the resources here
+//::Foundation::Memory::LinearAllocator<false>
+//    g_ResourceAllocator(HashNameMemoryCapacity);
 //-----------------------------------------------------------------------------
-} // namespace Internal
-} // namespace
+}; // namespace Internal
+}; // namespace
 //-----------------------------------------------------------------------------
 // HashName
 //-----------------------------------------------------------------------------
-HashNameAllocatorInterface::HashNameAllocatorInterface()
-{
-}
-//-----------------------------------------------------------------------------
-HashNameAllocatorInterface::~HashNameAllocatorInterface()
-{
-}
-//-----------------------------------------------------------------------------
-void* HashNameAllocatorInterface::allocate(const uint64_t p_SizeInBytes)
-{
-  return Internal::g_ResourceAllocator.allocate(p_SizeInBytes, 0);
-}
-//-----------------------------------------------------------------------------
-void* HashNameAllocatorInterface::allocateAligned(const uint64_t p_SizeInBytes,
-                                                  const uint32_t p_Allignment,
-                                                  const uint32_t p_Offset)
-{
-  return Internal::g_ResourceAllocator.allocateAligned(
-      p_SizeInBytes, p_Allignment, p_Offset, 0);
-}
+// HashNameAllocatorInterface::HashNameAllocatorInterface()
+//{
+//}
+////-----------------------------------------------------------------------------
+// HashNameAllocatorInterface::~HashNameAllocatorInterface()
+//{
+//}
+////-----------------------------------------------------------------------------
+// void* HashNameAllocatorInterface::allocate(const uint64_t p_SizeInBytes)
+//{
+//  return Internal::g_ResourceAllocator.allocate(p_SizeInBytes, 0);
+//}
+////-----------------------------------------------------------------------------
+// void* HashNameAllocatorInterface::allocateAligned(const uint64_t
+// p_SizeInBytes,
+//                                                  const uint32_t p_Allignment,
+//                                                  const uint32_t p_Offset)
+//{
+//  return Internal::g_ResourceAllocator.allocateAligned(
+//      p_SizeInBytes, p_Allignment, p_Offset, 0);
+//} // namespace Foundation
 //-----------------------------------------------------------------------------
 // HashName
 //-----------------------------------------------------------------------------
@@ -103,8 +104,9 @@ const char* HashName::c_str() const
   return defaultString.c_str();
 }
 //-----------------------------------------------------------------------------
-Foundation::Container::SimpleFixedMap<HashNameAllocatorInterface, std::string,
-                                      HashNameMapCapacity>
+Foundation::Container::SimpleFixedMap<
+    Foundation::Container::DefaultContainerAllocatorInterface, std::string,
+    HashNameMapCapacity>
     HashName::ms_StringRegistery;
 //-----------------------------------------------------------------------------
 }; // namespace Foundation
