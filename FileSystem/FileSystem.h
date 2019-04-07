@@ -3,6 +3,7 @@
 #include <inttypes.h>
 #include <stdbool.h>
 #include <experimental/filesystem>
+#include <condition_variable>
 
 #include <Util/Util.h>
 #include <Container/SimpleFixedQueue.h>
@@ -24,7 +25,7 @@ namespace fs = std::experimental::filesystem;
 //-----------------------------------------------------------------------------
 struct FileRequestDecl
 {
-  std::atomic<int32_t>* counter;
+  uint32_t counterIndex;
   const char* filePath;
   void* buffer;
 
@@ -38,8 +39,10 @@ struct FileSystem
       FileRequestDecl*, 128u>;
   // TODO: Create event
   static void init();
+  static void shutdown();
   static void enqueueLoadRequest(FileRequestDecl** p_FiberRequestDecl,
                                  uint32_t p_Count);
+  static void signalFileSystem();
 
   // Processes load requests; if any, else sleep till event gets called
   static void processLoadRequestAndSleep();
@@ -57,6 +60,9 @@ private:
 
   // TODO: find a better place for this
   const uint64_t RingBufferSize = 1024u * 1024u * 50u;
+
+  static std::condition_variable ms_ProcessConditionVariable;
+  static std::mutex ms_ProcessMutex;
 }; // namespace FiberSystem
 //-----------------------------------------------------------------------------
 }; // namespace FiberSystem

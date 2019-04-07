@@ -19,8 +19,9 @@ public:
   {
     uint64_t allocatedSize = Capacity * sizeof(t_Resource);
     m_Data = (t_Resource*)t_Allocator::allocate(allocatedSize);
-
     ASSERT(m_Data, "Memory allocation failed");
+
+    _grow(Capacity);
 
     m_Size = 0u;
   }
@@ -123,7 +124,7 @@ public:
     m_Size = p_SimpleFixedArray.m_Size;
   }
 
-  // TODO: private
+private:
   void _grow(const uint32_t p_Size)
   {
     HelperSFINAE::constructRanged<t_Resource>(&m_Data[m_Size], &m_Data[p_Size]);
@@ -134,7 +135,6 @@ public:
     HelperSFINAE::destructRanged<t_Resource>(&m_Data[p_Size], &m_Data[m_Size]);
   }
 
-private:
   uint32_t m_Size;
   const uint32_t Capacity = t_Capacity;
   t_Resource* m_Data;

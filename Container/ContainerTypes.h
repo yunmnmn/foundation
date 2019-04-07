@@ -58,8 +58,7 @@ struct HelperSFINAE
   {
     if constexpr (std::is_pod_v<t_Type>)
     {
-      const uint64_t test = p_End - p_Begin;
-      memcpy((void*)p_Dest, (void*)p_Begin, test);
+      memcpy((void*)p_Dest, (void*)p_Begin, (p_End - p_Begin) * sizeof(t_Type));
     }
     else
     {
@@ -89,8 +88,7 @@ struct HelperSFINAE
   {
     if constexpr (std::is_constructible_v<t_Type>)
     {
-      for (t_Type* memory = p_MemoryBegin; p_MemoryBegin != p_MemoryEnd;
-           memory++)
+      for (t_Type* memory = p_MemoryBegin; memory != p_MemoryEnd; memory++)
       {
         ::new (memory) t_Type();
       }
@@ -118,8 +116,7 @@ struct HelperSFINAE
   {
     if constexpr (std::is_constructible_v<t_Type>)
     {
-      for (t_Type* memory = p_MemoryBegin; p_MemoryBegin != p_MemoryEnd;
-           memory++)
+      for (t_Type* memory = p_MemoryBegin; memory != p_MemoryEnd; memory++)
       {
         memory->~t_Type();
       }

@@ -62,6 +62,31 @@ struct SimpleFixedQueue
     m_Size++;
   }
 
+  void enqueueBack(const t_Type& p_Entry)
+  {
+    uint32_t index = m_IndexContainer.back();
+    m_IndexContainer.pop_back();
+
+    Node& node = m_DataContainer[index];
+    HelperSFINAE::construct<Node>(&node);
+    node.index = index;
+    node.data = p_Entry;
+
+    uint32_t prev = m_Tail;
+    m_Tail = node.index;
+
+    node.prev = prev;
+    node.next = Empty;
+
+    // Should only happen when the queue is empty
+    if (m_Head == Empty)
+    {
+      m_Head = node.index;
+      ASSERT(m_Size == 0u, "Queue isn't empty");
+    }
+    m_Size++;
+  }
+
   void enqueueFront(t_Type& p_Entry)
   {
     uint32_t index = m_IndexContainer.back();
@@ -127,6 +152,8 @@ struct SimpleFixedQueue
   {
     m_DataContainer.clear();
     m_IndexContainer.clear();
+
+    m_IndexContainer.resize(Capacity);
     for (uint32_t i = 0u; i < Capacity; i++)
     {
       m_IndexContainer[i] = i;

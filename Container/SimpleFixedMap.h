@@ -115,7 +115,6 @@ private:
     EntryType entry;
     entry.key = p_Key;
     entry.next = MapEnd;
-    // Call constructor?
     const uint32_t dataIndex = m_Data.size();
     m_Data.push_back(entry);
     return dataIndex;

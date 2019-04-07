@@ -63,6 +63,11 @@ public:
   {
     mutex.Unlock();
   }
+
+  void forceUnlock()
+  {
+    mutex.Unlock();
+  }
 };
 //-----------------------------------------------------------------------------
 // Simple Linear congruential generator

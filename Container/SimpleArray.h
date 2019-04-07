@@ -7,8 +7,7 @@ namespace Foundation
 namespace Container
 {
 //-----------------------------------------------------------------------------
-template <typename t_Allocator, typename t_Resource,
-          uint32_t t_IncrementStep = 1u>
+template <typename t_Allocator, typename t_Resource, uint32_t t_IncrementStep>
 class SimpleArray
 {
   static_assert(!std::is_const_v<t_Resource>,
@@ -178,7 +177,7 @@ private:
   //-----------------------------------------------------------------------------
   void _erase(const uint32_t p_Index)
   {
-    ASSERT(p_Index >= m_Size,
+    ASSERT(p_Index <= m_Size,
            "Trying to erase entry higher than size, index out of bounds");
     m_Data[p_Index].~t_Resource();
   }
@@ -189,20 +188,15 @@ private:
     const uint64_t totalSize = p_NewCapacity * sizeof(t_Resource);
 
     t_Resource* mem = (t_Resource*)Allocator::allocate(totalSize);
-    // ASSERT(mem, "Allocated memory isn't valid");
+    ASSERT(mem, "Allocated memory isn't valid");
 
     // Note: So, apparently this isn't the same in every standard, so iterate
     // through all objects
-    for (uint32_t i = 0u; i < m_Size; i++)
-    {
-      HelperSFINAE::construct<t_Resource>(m_Data + m_Size);
-    }
+    HelperSFINAE::constructRanged<t_Resource>(mem, mem + p_NewCapacity);
 
-    ASSERT(m_Data && m_Capacity && m_Size, "Array isn't valid");
-    // if (m_Data && m_Capacity && m_Size)
+    if (m_Data && m_Capacity && m_Size)
     {
       // Copy old data
-      // std::copy(m_Data, m_Data + m_Size, mem);
       HelperSFINAE::copy(m_Data, m_Data + m_Size, mem);
 
       // Destruct old data
