@@ -18,22 +18,10 @@ namespace Foundation
 //-----------------------------------------------------------------------------
 const uint32_t HashNameMapCapacity = 1024u * 10u;
 //-----------------------------------------------------------------------------
-class HashNameAllocatorInterface
-{
-public:
-  HashNameAllocatorInterface();
-
-  ~HashNameAllocatorInterface();
-
-  static void* allocate(const uint64_t p_SizeInBytes);
-  static void* allocateAligned(const uint64_t p_SizeInBytes,
-                               const uint32_t p_Allignment,
-                               const uint32_t p_Offset);
-};
-//-----------------------------------------------------------------------------
 struct HashName
 {
   HashName();
+  HashName(std::string& p_String);
   HashName(const std::string& p_String);
   HashName(const HashName& p_Rhs);
   ~HashName();
@@ -41,12 +29,17 @@ struct HashName
   bool operator==(const HashName& p_Rhs);
   const char* c_str() const;
 
+  const uint64_t hash() const
+  {
+    return m_Hash;
+  }
+
 private:
   uint64_t m_Hash;
 
   static Foundation::Container::SimpleFixedMap<
       Foundation::Container::DefaultContainerAllocatorInterface, std::string,
       HashNameMapCapacity>
-      ms_StringRegistery;
+      ms_StringRegistry;
 };
 }; // namespace Foundation

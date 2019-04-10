@@ -58,7 +58,7 @@ template <typename t_TypeInfo> struct ConsoleModule
 {
   static void write(const LogEntry& p_LogEntry)
   {
-    std::cout << p_LogEntry.log;
+    std::cout << p_LogEntry.log + '\n';
   }
 };
 //---------------------------------------------------------------------------------//

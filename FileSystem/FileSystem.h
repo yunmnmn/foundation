@@ -17,11 +17,12 @@ namespace Foundation
 {
 namespace FiberSystem
 {
-namespace fs = std::experimental::filesystem;
-
 //-----------------------------------------------------------------------------
-// TODO: Scratch/Ring buffer to manage data here? Or request a buffer?
-// TODO: Add queue for load requests
+namespace fs = std::experimental::filesystem;
+//-----------------------------------------------------------------------------
+struct Helper
+{
+};
 //-----------------------------------------------------------------------------
 struct FileRequestDecl
 {

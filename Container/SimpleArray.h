@@ -149,6 +149,7 @@ public:
   {
     return m_Data[p_Index];
   }
+
   const t_Resource& operator[](uint32_t p_Index) const
   {
     return m_Data[p_Index];

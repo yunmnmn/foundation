@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Container/ContainerTypes.h>
+#include <Container/SimpleFixedArray.h>
 
 namespace Foundation
 {
@@ -143,7 +144,7 @@ private:
 
     // Swap entries
     m_Data[p_FindResult.dataIndex] = m_Data[m_Data.size() - 1u];
-    FindResult last = find(m_Data[p_FindResult.dataIndex].key);
+    FindResult last = _find(m_Data[p_FindResult.dataIndex].key);
     if (last.dataPrevIndex == MapEnd)
     {
       m_Hash[last.hashIndex] = p_FindResult.dataIndex;
