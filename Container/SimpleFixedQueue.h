@@ -150,7 +150,6 @@ struct SimpleFixedQueue
 
   void clear()
   {
-    m_DataContainer.clear();
     m_IndexContainer.clear();
 
     m_IndexContainer.resize(Capacity);

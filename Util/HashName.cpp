@@ -5,6 +5,9 @@
 
 namespace Foundation
 {
+//-----------------------------------------------------------------------------
+std::unordered_map<uint64_t, std::string> HashName::ms_StringRegistry;
+//-----------------------------------------------------------------------------
 namespace
 {
 namespace Internal
@@ -17,8 +20,8 @@ namespace Internal
 HashName::HashName() : m_Hash(0u)
 {
   callOnce([&]() {
-    std::string empty("empty");
-    ms_StringRegistry.set(0u, empty);
+    std::string empty("");
+    ms_StringRegistry[0] = empty;
   });
 }
 //-----------------------------------------------------------------------------
@@ -46,7 +49,7 @@ HashName::HashName(const std::string& p_String) : m_Hash(0u)
 
   // TODO: check if entry of the hash is empty
   ASSERT(m_Hash != 0u, "Don't assign the hash at the 0 index");
-  ms_StringRegistry.set(m_Hash, p_String);
+  ms_StringRegistry[m_Hash] = p_String;
 }
 //-----------------------------------------------------------------------------
 HashName::HashName(const HashName& p_Rhs)
@@ -65,15 +68,15 @@ bool HashName::operator==(const HashName& p_Rhs)
 //-----------------------------------------------------------------------------
 const char* HashName::c_str() const
 {
-  // TODO: assert if it's valid or not
   std::string defaultString("not Found");
-  defaultString = ms_StringRegistry.get(m_Hash, defaultString);
+
+  const auto& it = ms_StringRegistry.find(m_Hash);
+  if (it != ms_StringRegistry.end())
+  {
+    defaultString = it->second;
+  }
+
   return defaultString.c_str();
 }
-//-----------------------------------------------------------------------------
-Foundation::Container::SimpleFixedMap<
-    Foundation::Container::DefaultContainerAllocatorInterface, std::string,
-    HashNameMapCapacity>
-    HashName::ms_StringRegistry;
 //-----------------------------------------------------------------------------
 }; // namespace Foundation

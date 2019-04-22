@@ -74,9 +74,6 @@ public:
   {
     if constexpr (t_RingFeature)
     {
-      ASSERT(p_SizeInBytes <= m_CapacityInBytes,
-             "Don't call free on a linear allocator");
-
       if (m_offsetInBytes + p_SizeInBytes > m_CapacityInBytes)
       {
         m_offsetInBytes = 0u;
@@ -85,7 +82,7 @@ public:
     else
     {
       ASSERT(m_offsetInBytes + p_SizeInBytes <= m_CapacityInBytes,
-             "Don't call free on a linear allocator");
+             "Not enough memory");
     }
 
     void* mem = (void*)((uint8_t*)m_Data + m_offsetInBytes);

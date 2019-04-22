@@ -3,8 +3,6 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
-#include <Windows.h>
-
 namespace Foundation
 {
 //-----------------------------------------------------------------------------

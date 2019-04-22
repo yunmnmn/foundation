@@ -10,8 +10,7 @@
 #include <util/Util.h>
 #include <Util/MurmurHash3.h>
 #include <Util/HashName.h>
-#include <Container/SimpleFixedArray.h>
-#include <Container/SimpleFixedMap.h>
+#include <unordered_map>
 
 namespace Foundation
 {
@@ -21,7 +20,6 @@ const uint32_t HashNameMapCapacity = 1024u * 10u;
 struct HashName
 {
   HashName();
-  HashName(std::string& p_String);
   HashName(const std::string& p_String);
   HashName(const HashName& p_Rhs);
   ~HashName();
@@ -37,9 +35,6 @@ struct HashName
 private:
   uint64_t m_Hash;
 
-  static Foundation::Container::SimpleFixedMap<
-      Foundation::Container::DefaultContainerAllocatorInterface, std::string,
-      HashNameMapCapacity>
-      ms_StringRegistry;
+  static std::unordered_map<uint64_t, std::string> ms_StringRegistry;
 };
 }; // namespace Foundation
