@@ -35,6 +35,9 @@ HashName::HashName(const std::string& p_String) : m_Hash(0u)
     return len * alignment;
   };
 
+  if (p_String.empty())
+    return;
+
   static uint8_t buffer[1024];
   memset(buffer, 0, 1024);
   memcpy(buffer, p_String.data(), p_String.length());
