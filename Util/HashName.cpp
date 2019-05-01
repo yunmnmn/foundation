@@ -27,18 +27,19 @@ HashName::HashName() : m_Hash(0u)
 //-----------------------------------------------------------------------------
 HashName::HashName(const std::string& p_String) : m_Hash(0u)
 {
+  // Align to 8 bytes
   const static auto bufferLength = [](uint32_t p_Length) -> uint32_t {
     const uint32_t alignment = 8u;
     const uint32_t len =
         (p_Length / alignment) + (p_Length % alignment ? 1u : 0u);
-    ASSERT(len, "Should never be 0u");
+    ASSERT(len, "Should never be size of 0");
     return len * alignment;
   };
 
   if (p_String.empty())
     return;
 
-  static uint8_t buffer[1024];
+  uint8_t buffer[1024];
   memset(buffer, 0, 1024);
   memcpy(buffer, p_String.data(), p_String.length());
 
