@@ -54,11 +54,13 @@ HashName::HashName(const std::string& p_String) : m_Hash(0u)
   // TODO: check if entry of the hash is empty
   ASSERT(m_Hash != 0u, "Don't assign the hash at the 0 index");
   ms_StringRegistry[m_Hash] = p_String;
+  m_String = p_String;
 }
 //-----------------------------------------------------------------------------
 HashName::HashName(const HashName& p_Rhs)
 {
   m_Hash = p_Rhs.m_Hash;
+  m_String = p_Rhs.m_String;
 }
 //-----------------------------------------------------------------------------
 HashName::~HashName()

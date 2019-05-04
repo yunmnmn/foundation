@@ -34,6 +34,7 @@ struct HashName
 
 private:
   uint64_t m_Hash;
+  std::string m_String;
 
   static std::unordered_map<uint64_t, std::string> ms_StringRegistry;
 };
