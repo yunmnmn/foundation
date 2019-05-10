@@ -1,17 +1,13 @@
-// By Yun
-
 #pragma once
 
-#include <map>
-
-#include <iostream>
-#include <stdbool.h>
 #include <util/Util.h>
 #include <Container/ContainerTypes.h>
 #include <util/HashName.h>
+#include <Container/SimpleLockFreeQueue.h>
 
 #include <string>
-#include <vector>
+#include <iostream>
+#include <condition_variable>
 
 #ifdef _MSC_VER
 #define GET_FUNC() __FUNCTION__
@@ -35,6 +31,8 @@ namespace Foundation
 namespace Log
 {
 //---------------------------------------------------------------------------------//
+static Container::MultipleProducerLockFreeQueue<std::string, 128u> g_LogQueue;
+//---------------------------------------------------------------------------------//
 enum Severity : uint8_t
 {
   Info,
@@ -45,12 +43,20 @@ enum Severity : uint8_t
 //---------------------------------------------------------------------------------//
 struct LogEntry
 {
+  LogEntry(const char* p_Log, Severity p_LogSeverity,
+           const char* const p_FileName, const char* const p_FunctionName,
+           long p_Line)
+      : log(p_Log), logSeverity(p_LogSeverity), fileName(p_FileName),
+        functionName(p_FunctionName), line(p_Line)
+  {
+  }
+
   const std::string log;
-  const Severity logSeverity;
+  Severity logSeverity;
   // time
   const char* const fileName;
   const char* const functionName;
-  const long line;
+  long line;
 };
 //---------------------------------------------------------------------------------//
 // Implement the modules correctly
@@ -58,7 +64,8 @@ template <typename t_TypeInfo> struct ConsoleModule
 {
   static void write(const LogEntry& p_LogEntry)
   {
-    std::cout << p_LogEntry.log + '\n';
+    std::string string = p_LogEntry.log;
+    g_LogQueue.push(string);
   }
 };
 //---------------------------------------------------------------------------------//
@@ -76,10 +83,35 @@ template <typename t_TypeInfo> struct FileModule
   }
 };
 //------------------------------------------------------------------------------//
+inline void processLogQueue()
+{
+  std::string log;
+  // while (g_LogQueue.pop(log))
+  while (!g_LogQueue.isEmpty())
+  {
+    g_LogQueue.pop(log);
+    std::cout << log + '\n';
+  }
+}
+//------------------------------------------------------------------------------//
 template <typename t_TypeInfo, typename... t_LogType>
 void logTupleWrite(const LogEntry& p_LogEntry)
 {
-  (t_LogType::template write(p_LogEntry), ...);
+  // (t_LogType::template write(p_LogEntry), ...);
+  (..., t_LogType::template write(p_LogEntry));
+}
+//---------------------------------------------------------------------------------//
+inline void init()
+{
+}
+//---------------------------------------------------------------------------------//
+inline void destroy()
+{
+}
+//---------------------------------------------------------------------------------//
+inline bool empty()
+{
+  return false;
 }
 //---------------------------------------------------------------------------------//
 }; // namespace Log
