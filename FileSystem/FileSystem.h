@@ -7,8 +7,8 @@
 #include <fstream> // std::ifstream
 
 #include <Util/Util.h>
-#include <Container/SimpleFixedQueue.h>
-#include <util/Assert.h>
+#include <Container/SimpleLockFreeQueue.h>
+#include <Util/Assert.h>
 #include <FiberScheduler.h>
 
 namespace std
@@ -47,30 +47,33 @@ struct FileRequestDecl
 template <typename t_Allocator> struct FileSystem
 {
   //-----------------------------------------------------------------------------
-  using FileSystemQueue = Container::SimpleFixedQueue<
-      Foundation::Container::DefaultContainerAllocatorInterface,
-      FileRequestDecl*, 128u>;
+  using FileSystemQueue =
+      Container::MultipleProducerLockFreeQueue<FileRequestDecl*, 128u>;
   //-----------------------------------------------------------------------------
-  // TODO: Create event
   static void init()
   {
   }
   //-----------------------------------------------------------------------------
-  static void shutdown()
+  static void destroy()
   {
+    ms_ProcessConditionVariable = nullptr;
+  }
+
+  static bool empty()
+  {
+    return false;
   }
   //-----------------------------------------------------------------------------
   static void enqueueLoadRequest(FileRequestDecl** p_FiberRequestDecl,
                                  uint32_t p_Count)
   {
-    std::unique_lock<std::mutex> lock(ms_ProcessMutex);
-
     for (uint32_t i = 0u; i < p_Count; i++)
     {
-      ms_Queue.enqueueBack(p_FiberRequestDecl[i]);
+      ms_ProcessQueue.push(p_FiberRequestDecl[i]);
     }
 
-    ms_ProcessConditionVariable.notify_all();
+    if (ms_ProcessConditionVariable)
+      ms_ProcessConditionVariable->notify_all();
   }
   //-----------------------------------------------------------------------------
   static void signalFileSystem()
@@ -89,9 +92,9 @@ template <typename t_Allocator> struct FileSystem
       }
       else
       {
-        if (ms_Queue.size())
+        if (ms_ProcessQueue.size())
         {
-          processLoadRequests();
+          processLoadRequests(true);
           lock.release();
         }
         else
@@ -102,34 +105,28 @@ template <typename t_Allocator> struct FileSystem
     }
   }
   //-----------------------------------------------------------------------------
-  static void processLoadRequests()
+  static void processLoadRequests(const bool p_AdoptLock)
   {
     // Copy the main queue to a process queue, so the loading part is out of the
     // critical section
     {
-      std::unique_lock<std::mutex> lock(ms_ProcessMutex, std::adopt_lock);
+      // while (ms_ProcessQueue.pop(fileRequestDecl))
+      FileRequestDecl* fileRequestDecl = nullptr;
+      while (!ms_ProcessQueue.isEmpty())
+      {
+        ms_ProcessQueue.pop(fileRequestDecl);
+        ASSERT(fileRequestDecl, "Loadrequest not valid");
+        ASSERT(fileRequestDecl->filePath, "Loadrequest filepath not valid");
+        // ASSERT(fiberRequestDecl->buffer, "Loadrequest buffer not valid");
 
-      ms_ProcessQueue.clear();
-      ms_ProcessQueue = ms_Queue;
-      ms_Queue.clear();
+        _readFile(fileRequestDecl);
 
-      lock.unlock();
-    }
-
-    FileRequestDecl* fileRequestDecl;
-    while (ms_ProcessQueue.dequeueFront(fileRequestDecl))
-    {
-      ASSERT(fileRequestDecl, "Loadrequest not valid");
-      ASSERT(fileRequestDecl->filePath, "Loadrequest filepath not valid");
-      // ASSERT(fiberRequestDecl->buffer, "Loadrequest buffer not valid");
-
-      _readFile(fileRequestDecl);
-
-      // Subtract the counter
-      ::Foundation::FiberSystem::AtomicCounter* counter = nullptr;
-      FiberSystem::FiberManager::getAtomicCounterFromIndex(
-          fileRequestDecl->counterIndex, counter);
-      counter->fetch_sub(1u, std::memory_order_relaxed);
+        // Subtract the counter
+        ::Foundation::FiberSystem::AtomicCounter* counter = nullptr;
+        FiberSystem::FiberManager::getAtomicCounterFromIndex(
+            fileRequestDecl->counterIndex, counter);
+        counter->fetch_sub(1u, std::memory_order_relaxed);
+      }
     }
   }
 
@@ -179,13 +176,11 @@ private:
   //-----------------------------------------------------------------------------
   // TODO: hardcoded queue Size
   static FileSystemQueue ms_ProcessQueue;
-  static FileSystemQueue ms_Queue;
   static Foundation::Mutex ms_QueueMutex;
 
   // TODO: find a better place for this
   const uint64_t RingBufferSize = 1024u * 1024u * 50u;
 
-  static std::condition_variable ms_ProcessConditionVariable;
   static std::mutex ms_ProcessMutex;
 };
 //-----------------------------------------------------------------------------
@@ -193,12 +188,7 @@ template <typename t_Allocator>
 typename FileSystem<t_Allocator>::FileSystemQueue
     FileSystem<t_Allocator>::ms_ProcessQueue;
 template <typename t_Allocator>
-typename FileSystem<t_Allocator>::FileSystemQueue
-    FileSystem<t_Allocator>::ms_Queue;
-template <typename t_Allocator>
 Foundation::Mutex FileSystem<t_Allocator>::ms_QueueMutex;
-template <typename t_Allocator>
-std::condition_variable FileSystem<t_Allocator>::ms_ProcessConditionVariable;
 template <typename t_Allocator>
 std::mutex FileSystem<t_Allocator>::ms_ProcessMutex;
 //-----------------------------------------------------------------------------
