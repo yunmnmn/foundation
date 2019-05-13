@@ -1,4 +1,7 @@
-//#include "Logger.h"
+#include "Logger.h"
+
+Foundation::Container::MultipleProducerLockFreeQueue<std::string, 128u>
+    Foundation::Log::LogData::ms_LogQueue;
 //
 // namespace Foundation
 //{

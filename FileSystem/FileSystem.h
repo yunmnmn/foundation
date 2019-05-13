@@ -10,6 +10,7 @@
 #include <Container/SimpleLockFreeQueue.h>
 #include <Util/Assert.h>
 #include <FiberScheduler.h>
+#include <RendererIO.h>
 
 namespace std
 {
@@ -56,12 +57,11 @@ template <typename t_Allocator> struct FileSystem
   //-----------------------------------------------------------------------------
   static void destroy()
   {
-    ms_ProcessConditionVariable = nullptr;
   }
-
+  //-----------------------------------------------------------------------------
   static bool empty()
   {
-    return false;
+    return ms_ProcessQueue.isEmpty();
   }
   //-----------------------------------------------------------------------------
   static void enqueueLoadRequest(FileRequestDecl** p_FiberRequestDecl,
@@ -72,8 +72,7 @@ template <typename t_Allocator> struct FileSystem
       ms_ProcessQueue.push(p_FiberRequestDecl[i]);
     }
 
-    if (ms_ProcessConditionVariable)
-      ms_ProcessConditionVariable->notify_all();
+    Renderer::RendererIO::signal();
   }
   //-----------------------------------------------------------------------------
   static void signalFileSystem()
@@ -92,14 +91,15 @@ template <typename t_Allocator> struct FileSystem
       }
       else
       {
-        if (ms_ProcessQueue.size())
+        if (!ms_ProcessQueue.isEmpty())
         {
           processLoadRequests(true);
           lock.release();
         }
         else
         {
-          ms_ProcessConditionVariable.wait(lock);
+          // TODO: put this back
+          // ms_ProcessConditionVariable.wait(lock);
         }
       }
     }

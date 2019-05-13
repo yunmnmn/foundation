@@ -31,7 +31,11 @@ namespace Foundation
 namespace Log
 {
 //---------------------------------------------------------------------------------//
-static Container::MultipleProducerLockFreeQueue<std::string, 128u> g_LogQueue;
+struct LogData
+{
+  static Container::MultipleProducerLockFreeQueue<std::string, 128u>
+      ms_LogQueue;
+};
 //---------------------------------------------------------------------------------//
 enum Severity : uint8_t
 {
@@ -65,7 +69,7 @@ template <typename t_TypeInfo> struct ConsoleModule
   static void write(const LogEntry& p_LogEntry)
   {
     std::string string = p_LogEntry.log;
-    g_LogQueue.push(string);
+    LogData::ms_LogQueue.push(string);
   }
 };
 //---------------------------------------------------------------------------------//
@@ -87,9 +91,9 @@ inline void processLogQueue()
 {
   std::string log;
   // while (g_LogQueue.pop(log))
-  while (!g_LogQueue.isEmpty())
+  while (!LogData::ms_LogQueue.isEmpty())
   {
-    g_LogQueue.pop(log);
+    LogData::ms_LogQueue.pop(log);
     std::cout << log + '\n';
   }
 }
@@ -111,7 +115,7 @@ inline void destroy()
 //---------------------------------------------------------------------------------//
 inline bool empty()
 {
-  return false;
+  return LogData::ms_LogQueue.isEmpty();
 }
 //---------------------------------------------------------------------------------//
 }; // namespace Log
