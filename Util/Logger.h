@@ -8,6 +8,8 @@
 #include <string>
 #include <iostream>
 #include <condition_variable>
+#include <stdio.h>
+#include <stdarg.h>
 
 #ifdef _MSC_VER
 #define GET_FUNC() __FUNCTION__
@@ -47,7 +49,7 @@ enum Severity : uint8_t
 //---------------------------------------------------------------------------------//
 struct LogEntry
 {
-  LogEntry(const char* p_Log, Severity p_LogSeverity,
+  LogEntry(std::string p_Log, Severity p_LogSeverity,
            const char* const p_FileName, const char* const p_FunctionName,
            long p_Line)
       : log(p_Log), logSeverity(p_LogSeverity), fileName(p_FileName),
@@ -63,12 +65,29 @@ struct LogEntry
   long line;
 };
 //---------------------------------------------------------------------------------//
+inline std::string simpleSprintf(const char* p_Format, ...)
+{
+  char buffer[1280];
+  memset(buffer, 0, 1280);
+
+  va_list argptr;
+  va_start(argptr, p_Format);
+  uint32_t len = vsnprintf(buffer, 1280, p_Format, argptr);
+  va_end(argptr);
+
+  buffer[len] = '\0';
+
+  return std::string(buffer);
+}
+//---------------------------------------------------------------------------------//
 // Implement the modules correctly
 template <typename t_TypeInfo> struct ConsoleModule
 {
   static void write(const LogEntry& p_LogEntry)
   {
-    std::string string = p_LogEntry.log;
+    std::string string =
+        simpleSprintf("%s %s", t_TypeInfo::getPrefix(), p_LogEntry.log.c_str());
+
     LogData::ms_LogQueue.push(string);
   }
 };
