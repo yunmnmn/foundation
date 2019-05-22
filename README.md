@@ -1,3 +1,1 @@
-# foundation
-
-Personal foundation library. WIP
+# Foundation
