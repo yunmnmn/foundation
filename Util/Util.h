@@ -1,7 +1,8 @@
 #pragma once
 
-#include <inttypes.h>
-#include <stdbool.h>
+#include <stdio.h>
+#include <stdarg.h>
+#include <string>
 
 namespace Foundation
 {
@@ -14,6 +15,21 @@ template <typename Functor> void callOnce(Functor functor)
     functor();
     called = true;
   }
+}
+//---------------------------------------------------------------------------------//
+inline std::string simpleSprintf(const char* p_Format, ...)
+{
+  char buffer[1280];
+  memset(buffer, 0, 1280);
+
+  va_list argptr;
+  va_start(argptr, p_Format);
+  uint32_t len = vsnprintf(buffer, 1280, p_Format, argptr);
+  va_end(argptr);
+
+  buffer[len] = '\0';
+
+  return std::string(buffer);
 }
 //-----------------------------------------------------------------------------
 class Mutex

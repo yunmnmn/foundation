@@ -5,11 +5,8 @@
 #include <util/HashName.h>
 #include <Container/SimpleLockFreeQueue.h>
 
-#include <string>
 #include <iostream>
 #include <condition_variable>
-#include <stdio.h>
-#include <stdarg.h>
 
 #ifdef _MSC_VER
 #define GET_FUNC() __FUNCTION__
@@ -64,21 +61,6 @@ struct LogEntry
   const char* const functionName;
   long line;
 };
-//---------------------------------------------------------------------------------//
-inline std::string simpleSprintf(const char* p_Format, ...)
-{
-  char buffer[1280];
-  memset(buffer, 0, 1280);
-
-  va_list argptr;
-  va_start(argptr, p_Format);
-  uint32_t len = vsnprintf(buffer, 1280, p_Format, argptr);
-  va_end(argptr);
-
-  buffer[len] = '\0';
-
-  return std::string(buffer);
-}
 //---------------------------------------------------------------------------------//
 // Implement the modules correctly
 template <typename t_TypeInfo> struct ConsoleModule
