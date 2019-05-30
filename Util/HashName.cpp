@@ -74,15 +74,17 @@ bool HashName::operator==(const HashName& p_Rhs)
 //-----------------------------------------------------------------------------
 const char* HashName::c_str() const
 {
-  std::string defaultString("not Found");
+  // std::string defaultString("not Found");
 
-  const auto& it = ms_StringRegistry.find(m_Hash);
-  if (it != ms_StringRegistry.end())
-  {
-    defaultString = it->second;
-  }
+  // const auto& it = ms_StringRegistry.find(m_Hash);
+  // if (it != ms_StringRegistry.end())
+  //{
+  //  defaultString = it->second;
+  //}
 
-  return defaultString.c_str();
+  // return defaultString.c_str();
+
+  return m_String.c_str();
 }
 //-----------------------------------------------------------------------------
 }; // namespace Foundation
