@@ -12,6 +12,8 @@
 //-----------------------------------------------------------------------------
 // Platform-specific functions and macros
 
+#include <Util/Assert.h>
+
 // Microsoft Visual Studio
 
 #if defined(_MSC_VER)
@@ -496,3 +498,12 @@ void MurmurHash3_x64_64(const void* key, int len, uint32_t seed, void* out)
 
   ((uint64_t*)out)[0] = h;
 }
+//-----------------------------------------------------------------------------
+uint32_t bufferLengthAlign64(uint32_t p_Size)
+{
+  const uint32_t alignment = 8u;
+  const uint32_t len = (p_Size / alignment) + (p_Size % alignment ? 1u : 0u);
+  ASSERT(len, "Should never be size of 0");
+  return len * alignment;
+};
+//-----------------------------------------------------------------------------

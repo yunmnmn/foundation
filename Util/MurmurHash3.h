@@ -37,5 +37,7 @@ void MurmurHash3_x64_128(const void* key, int len, uint32_t seed, void* out);
 
 void MurmurHash3_x64_64(const void* key, int len, uint32_t seed, void* out);
 //-----------------------------------------------------------------------------
-
+// Align to 8 bytes (64 bits)
+uint32_t bufferLengthAlign64(uint32_t p_Size);
+//-----------------------------------------------------------------------------
 #endif // _MURMURHASH3_H_
