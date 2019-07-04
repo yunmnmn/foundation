@@ -7,6 +7,7 @@ namespace Foundation
 {
 //-----------------------------------------------------------------------------
 std::unordered_map<uint64_t, std::string> HashName::ms_StringRegistry;
+SpinLock HashName::ms_SpinLock;
 //-----------------------------------------------------------------------------
 namespace
 {
@@ -20,22 +21,15 @@ namespace Internal
 HashName::HashName() : m_Hash(0u)
 {
   callOnce([&]() {
+    ms_SpinLock.lock();
     std::string empty("");
     ms_StringRegistry[0] = empty;
+    ms_SpinLock.unlock();
   });
 }
 //-----------------------------------------------------------------------------
 HashName::HashName(const std::string& p_String) : m_Hash(0u)
 {
-  // Align to 8 bytes
-  const static auto bufferLength = [](uint32_t p_Length) -> uint32_t {
-    const uint32_t alignment = 8u;
-    const uint32_t len =
-        (p_Length / alignment) + (p_Length % alignment ? 1u : 0u);
-    ASSERT(len, "Should never be size of 0");
-    return len * alignment;
-  };
-
   if (p_String.empty())
     return;
 
@@ -43,7 +37,7 @@ HashName::HashName(const std::string& p_String) : m_Hash(0u)
   memset(buffer, 0, 1024);
   memcpy(buffer, p_String.data(), p_String.length());
 
-  const uint32_t hashLength = bufferLength((uint32_t)p_String.length());
+  const uint32_t hashLength = bufferLengthAlign64((uint32_t)p_String.length());
   ASSERT(hashLength < 1024, "That is a long string");
 
   // Birth year, yay
@@ -53,14 +47,20 @@ HashName::HashName(const std::string& p_String) : m_Hash(0u)
 
   // TODO: check if entry of the hash is empty
   ASSERT(m_Hash != 0u, "Don't assign the hash at the 0 index");
-  ms_StringRegistry[m_Hash] = p_String;
-  m_String = p_String;
+
+  {
+    ms_SpinLock.lock();
+    ms_StringRegistry[m_Hash] = p_String;
+    ms_SpinLock.unlock();
+  }
+
+  // m_String = p_String;
 }
 //-----------------------------------------------------------------------------
 HashName::HashName(const HashName& p_Rhs)
 {
   m_Hash = p_Rhs.m_Hash;
-  m_String = p_Rhs.m_String;
+  // m_String = p_Rhs.m_String;
 }
 //-----------------------------------------------------------------------------
 HashName::~HashName()
@@ -74,17 +74,17 @@ bool HashName::operator==(const HashName& p_Rhs)
 //-----------------------------------------------------------------------------
 const char* HashName::c_str() const
 {
-  // std::string defaultString("not Found");
+  std::string defaultString("not Found");
 
-  // const auto& it = ms_StringRegistry.find(m_Hash);
-  // if (it != ms_StringRegistry.end())
-  //{
-  //  defaultString = it->second;
-  //}
+  const auto& it = ms_StringRegistry.find(m_Hash);
+  if (it != ms_StringRegistry.end())
+  {
+    defaultString = it->second;
+  }
 
-  // return defaultString.c_str();
+  return defaultString.c_str();
 
-  return m_String.c_str();
+  // return m_String.c_str();
 }
 //-----------------------------------------------------------------------------
 }; // namespace Foundation
