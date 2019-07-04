@@ -1,16 +1,16 @@
 #pragma once
 
-#include <inttypes.h>
-#include <stdbool.h>
-#include <experimental/filesystem>
-#include <condition_variable>
-#include <fstream> // std::ifstream
-
 #include <Util/Util.h>
 #include <Container/SimpleLockFreeQueue.h>
 #include <Util/Assert.h>
 #include <FiberScheduler.h>
 #include <RendererIO.h>
+
+#include <inttypes.h>
+#include <stdbool.h>
+#include <experimental/filesystem>
+#include <condition_variable>
+#include <fstream> // std::ifstream
 
 namespace std
 {
@@ -162,7 +162,9 @@ private:
     }
     else
     {
-      ASSERT(false, "Failed to load");
+      ASSERT(false, ::Foundation::simpleSprintf("Failed to load \"%s\"",
+                                                p_FileRequest->filePath)
+                        .c_str());
     }
 
     file.close();
