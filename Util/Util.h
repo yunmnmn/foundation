@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <string>
+#include <atomic>
 
 namespace Foundation
 {
@@ -65,12 +66,6 @@ public:
     DeleteCriticalSection(&criticalSection);
   }
 
-  Mutex(const Mutex&) = delete;
-  Mutex& operator=(const Mutex&) = delete;
-
-  friend class ScopedGuard<Mutex>;
-
-private:
   void lock()
   {
     EnterCriticalSection(&criticalSection);
@@ -79,6 +74,11 @@ private:
   {
     LeaveCriticalSection(&criticalSection);
   }
+
+  Mutex(const Mutex&) = delete;
+  Mutex& operator=(const Mutex&) = delete;
+
+private:
 };
 //-----------------------------------------------------------------------------
 template <typename t_Lock> class ScopedGuard

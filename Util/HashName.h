@@ -5,7 +5,6 @@
 #include <Util/HashName.h>
 
 #include <unordered_map>
-#include <atomic>
 #include <inttypes.h>
 #include <stdbool.h>
 #include <string>
