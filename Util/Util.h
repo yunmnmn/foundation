@@ -32,6 +32,24 @@ inline std::string simpleSprintf(const char* p_Format, ...)
   return std::string(buffer);
 }
 //-----------------------------------------------------------------------------
+class SpinLock
+{
+  std::atomic_flag locked = ATOMIC_FLAG_INIT;
+
+public:
+  void lock()
+  {
+    while (locked.test_and_set(std::memory_order_acquire))
+    {
+    }
+  }
+  void unlock()
+  {
+    locked.clear(std::memory_order_release);
+  }
+};
+//-----------------------------------------------------------------------------
+// TODO: replace this with std calls instead of windows specific ones
 class Mutex
 {
   RTL_CRITICAL_SECTION criticalSection;
@@ -50,37 +68,37 @@ public:
   Mutex(const Mutex&) = delete;
   Mutex& operator=(const Mutex&) = delete;
 
-  friend class ScopedGuard;
+  friend class ScopedGuard<Mutex>;
 
 private:
-  void Lock()
+  void lock()
   {
     EnterCriticalSection(&criticalSection);
   }
-  void Unlock()
+  void unlock()
   {
     LeaveCriticalSection(&criticalSection);
   }
 };
 //-----------------------------------------------------------------------------
-class ScopedGuard
+template <typename t_Lock> class ScopedGuard
 {
-  Mutex& mutex;
+  t_Lock& m_Mutex;
 
 public:
-  ScopedGuard(Mutex& _mutex) : mutex(_mutex)
+  ScopedGuard(t_Lock& p_Mutex) : m_Mutex(p_Mutex)
   {
-    mutex.Lock();
+    m_Mutex.lock();
   }
 
   ~ScopedGuard()
   {
-    mutex.Unlock();
+    m_Mutex.unlock();
   }
 
   void forceUnlock()
   {
-    mutex.Unlock();
+    m_Mutex.unlock();
   }
 };
 //-----------------------------------------------------------------------------
