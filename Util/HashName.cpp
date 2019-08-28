@@ -51,6 +51,7 @@ HashName::HashName(const std::string& p_String) : m_Hash(0u)
   {
     ms_SpinLock.lock();
     ms_StringRegistry[m_Hash] = p_String;
+    m_cstring = ms_StringRegistry[m_Hash].c_str();
     ms_SpinLock.unlock();
   }
 

@@ -31,6 +31,7 @@ struct HashName
 
 private:
   uint64_t m_Hash;
+  const char* m_cstring;
 
   static std::unordered_map<uint64_t, std::string> ms_StringRegistry;
   static SpinLock ms_SpinLock;
