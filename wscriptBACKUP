@@ -6,8 +6,8 @@ def configure(cnf):
 
 def build(bld):
    bld.stlib(
-      source       = ['Source/FiberScheduler.cpp', 'Source/Thread.cpp'], 
-      target       = 'FiberScheduler', 
+      source       = [''], 
+      target       = '', 
       use          = [''],
 
       includes     = ['Include'],
