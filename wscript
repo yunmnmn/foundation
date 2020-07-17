@@ -1,10 +1,18 @@
+SUBFOLDERS = [
+   'ThirdParty'
+]
+
 def options(opt):
+   opt.recurse(SUBFOLDERS, mandatory=False)
    pass
 
 def configure(cnf):
+   cnf.recurse(SUBFOLDERS, mandatory=False)
    pass
 
 def build(bld):
+   bld.recurse(SUBFOLDERS, mandatory=False)
+
    bld.stlib(
       source       = ['Source/Container/ContainerTypes.cpp',
                       'Source/FileSystem/FileSystem.cpp',
@@ -17,7 +25,7 @@ def build(bld):
                       ], 
 
       target       = 'Foundation', 
-      use          = [''],
+      use          = ['TLSF'],
 
       includes     = ['Include'],
       defines      = [],

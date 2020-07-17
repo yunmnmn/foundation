@@ -1,0 +1,12 @@
+SUBFOLDERS = [
+   'TLSF'
+]
+
+def options(opt):
+   opt.recurse(SUBFOLDERS, mandatory=False)
+
+def configure(cnf):
+   cnf.recurse(SUBFOLDERS, mandatory=False)
+
+def build(bld):
+   bld.recurse(SUBFOLDERS, mandatory=False)

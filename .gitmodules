@@ -1,0 +1,3 @@
+[submodule "ThirdParty/TLSF/Code"]
+	path = ThirdParty/TLSF/Code
+	url = git@github.com:mattconte/tlsf.git

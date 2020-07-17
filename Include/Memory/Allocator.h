@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #include <util/Assert.h>
+#include <tlsf.h>
 
 namespace Foundation
 {
