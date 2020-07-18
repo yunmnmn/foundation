@@ -12,6 +12,7 @@ def build(bld):
       use          = [''],
 
       includes     = ["Code"],
+      export_includes = ["Code"],
       defines      = [],
 
       lib          = [],
