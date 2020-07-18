@@ -1,5 +1,6 @@
 SUBFOLDERS = [
-   'TLSF'
+   "TLSF",
+   "EASTL"
 ]
 
 def options(opt):
