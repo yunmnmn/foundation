@@ -13,6 +13,11 @@ def configure(cnf):
 def build(bld):
    bld.recurse(SUBFOLDERS, mandatory=False)
 
+   # Get an array of environment specific source
+   envSpecificSourcePath = bld.GetSourcePathFromEnvironment("Source", ["Util/Mutex.cpp"])
+   # Get an array of environment specific includes
+   envSpecificInclude = bld.GetIncludePathFromEnvironment("Include")
+
    bld.stlib(
       source       = ['Source/Container/ContainerTypes.cpp',
                       'Source/FileSystem/FileSystem.cpp',
@@ -22,12 +27,14 @@ def build(bld):
                       'Source/Util/HashName.cpp',
                       'Source/Util/Logger.cpp',
                       'Source/Util/MurmurHash3.cpp',
-                      ], 
+                     ] 
+                     + envSpecificSourcePath, 
 
-      target       = 'Foundation', 
+      target       = "Foundation", 
       use          = ["TLSF", "EASTL"],
 
-      includes     = ['Include'],
+      includes     = ["Include"] + envSpecificInclude,
+      export_includes = ["Include"] + envSpecificInclude,
       defines      = [],
 
       lib          = [],
