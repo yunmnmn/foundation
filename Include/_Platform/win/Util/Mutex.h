@@ -1,32 +1,35 @@
 #include <Windows.h>
 
-// TODO: replace this with std calls instead of windows specific ones
-class Mutex
+namespace Foundation
 {
-    RTL_CRITICAL_SECTION criticalSection;
-
-public:
-    Mutex()
+    // TODO: replace this with std calls instead of windows specific ones
+    class Mutex
     {
-        InitializeCriticalSectionAndSpinCount(&criticalSection, 128);
-    }
+        RTL_CRITICAL_SECTION criticalSection;
 
-    ~Mutex()
-    {
-        DeleteCriticalSection(&criticalSection);
-    }
+    public:
+        Mutex()
+        {
+            InitializeCriticalSectionAndSpinCount(&criticalSection, 128);
+        }
 
-    void lock()
-    {
-        EnterCriticalSection(&criticalSection);
-    }
-    void unlock()
-    {
-        LeaveCriticalSection(&criticalSection);
-    }
+        ~Mutex()
+        {
+            DeleteCriticalSection(&criticalSection);
+        }
 
-    Mutex(const Mutex&) = delete;
-    Mutex& operator=(const Mutex&) = delete;
+        void lock()
+        {
+            EnterCriticalSection(&criticalSection);
+        }
+        void unlock()
+        {
+            LeaveCriticalSection(&criticalSection);
+        }
 
-private:
+        Mutex(const Mutex&) = delete;
+        Mutex& operator=(const Mutex&) = delete;
+
+    private:
+    };
 };
