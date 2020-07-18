@@ -25,7 +25,7 @@ def build(bld):
                       ], 
 
       target       = 'Foundation', 
-      use          = ['TLSF'],
+      use          = ["TLSF", "EASTL"],
 
       includes     = ['Include'],
       defines      = [],
