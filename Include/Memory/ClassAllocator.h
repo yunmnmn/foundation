@@ -11,7 +11,7 @@
 #define CLASS_ALLOCATOR(_Class, _Allocator)                                                                                        \
    inline void* operator new(std::size_t size)                                                                                     \
    {                                                                                                                               \
-      return Foundation::Memory::AllocatorInterface<_Class, _Allocator, _DescriptorFunctor>::Get().Allocate(                       \
+      return Foundation::Memory::ClassAllocator<_Class, _Allocator, _DescriptorFunctor>::Get().Allocate(                           \
           size, std::alignment_of<_Class>::value, #_Class);                                                                        \
    }                                                                                                                               \
    inline void operator delete(void* p, std::size_t size)                                                                          \
@@ -26,82 +26,51 @@ namespace Foundation
 {
 namespace Memory
 {
-class ClassAllocator : public AllocatorBase
+template <typename t_class, typename t_schema> class ClassAllocator
 {
-   static constexpr uint32_t InvalidElementIndex = static_cast<uint32_t>(-1);
-
  public:
-   struct Descriptor
+   static void* Allocate(size_t p_size, int32_t p_flag = 0)
    {
-      uint32_t m_pageCapacity = 0u;
-      uint32_t m_elementSize = 0u;
-   };
-
-   NO_COPY_ASSIGN(PoolAllocator);
-
-   void Grow()
-   {
+      InitializeSchema();
+      ms_schema->Allocate(p_size);
    }
 
-   PoolAllocator(const Descriptor& p_descriptor)
+   static void* AllocateAligned(size_t p_size, size_t p_alignment, size_t offset, int flags = 0)
    {
+      InitializeSchema();
+      ms_schema->AllocateAligned(p_size, p_alignment, offset);
    }
 
-   ~PoolAllocator()
+   static void Deallocate(void* p, size_t n)
    {
-   }
-
-   void* Allocate()
-   {
-      // Pool is already full
-      if (m_poolIndex >= PoolSize)
-      {
-         while (m_flag.test_and_set())
-            ;
-
-         m_flag.clear();
-      }
-      else
-      {
-         // If it's not locket yet
-         if (!m_flag.test_and_set() && m_freeIndex != InvalidElementIndex)
-         {
-            ElementType* freeObject = &m_objects[m_freeIndex];
-
-            // Set the next free index
-            const uint32_t previousFreeIndex = m_freeIndex;
-            m_freeIndex = m_nextIndex[m_freeIndex];
-
-            // Set the current one
-            m_nextIndex[previousFreeIndex] = InvalidElementIndex;
-
-            // Re-use an object
-            m_flag.clear();
-            return freeObject;
-         }
-
-         // If it's already locked, get a new one
-         m_poolIndex++;
-      }
-   }
-
-   void* AllocateAllign()
-   {
-   }
-
-   void Deaclloate(void* memory)
-   {
+      ASSERT(ms_schema.get(), "Bootstrap schema isn't initialized");
+      ms_schema->Deallocate(p, n);
    }
 
  private:
-   std::atomic_uint32_t m_poolIndex = 0u;
-   uint32_t m_freeIndex = InvalidElementIndex;
+   static void InitializeSchema()
+   {
+      std::call_once(ms_initializedFlag, []() {
+         SchemaBase::Descriptor desc = {1u, 1024 * 4u};
 
-   ElementType m_objects[PoolSize];
-   uint32_t m_nextIndex[PoolSize] = {InvalidElementIndex};
+         // Create the Schema
+         ms_schema = t_schema::CreateSchema(desc, ms_schemaData);
+      });
 
-   std::atomic_flag m_flag;
-   SpinLock m_spinLock;
+      ASSERT(ms_schema.get(), "Bootstrap schema isn't initialized");
+   }
+
+   static void Allocate()
+   {
+      Get()->Allocate();
+   }
+
+   static void Deallocate(void* data, uint32_t size)
+   {
+   }
+
+   t_allocator* ms_allocator = nullptr;
+   static std::aligned_storage<sizeof(t_allocator), std::alignment_of<t_allocato>>::value > ::type ms_allocatorData = {};
 };
 }; // namespace Memory
 }; // namespace Foundation

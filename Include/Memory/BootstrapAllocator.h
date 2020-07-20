@@ -2,13 +2,13 @@
 
 #include <inttypes.h>
 #include <stdbool.h>
-#include <mutex>
 
 #include <EASTL/unique_ptr.h>
 
 #include <Memory/SchemaBase.h>
 
 #include <Util/Assert.h>
+#include <Util/Util.h>
 
 namespace Foundation
 {
@@ -20,6 +20,7 @@ template <typename t_schema> class BootstrapAllocator
    using AllocationDataType = std::aligned_storage<sizeof(t_schema), std::alignment_of<t_schema>>::value > ::type;
 
  public:
+   // EASTL specific functions
    static void* allocate(size_t p_size, int32_t p_flag = 0)
    {
       InitializeSchema();
@@ -41,7 +42,7 @@ template <typename t_schema> class BootstrapAllocator
  private:
    static void InitializeSchema()
    {
-      std::call_once(ms_initializedFlag, []() {
+      CallOnce(ms_initializedFlag, []() {
          SchemaBase::Descriptor desc = {1u, 1024 * 4u};
 
          // Create the Schema
@@ -52,13 +53,13 @@ template <typename t_schema> class BootstrapAllocator
    }
 
    static eastl::unique_ptr<t_schema> ms_schema;
-   static std::once_flag ms_initializedFlag;
+   static bool ms_initializedFlag;
 
    static AllocationDataType ms_schemaData;
 };
 
 template <typename t_schema> eastl::unique_ptr<t_schema> BootstrapAllocator<t_schema>::ms_schema;
-template <typename t_schema> std::once_flag BootstrapAllocator<t_schema>::ms_initializedFlag;
+template <typename t_schema> bool BootstrapAllocator<t_schema>::ms_initializedFlag = false;
 template <typename t_schema> BootstrapAllocator<t_schema>::AllocationDataType BootstrapAllocator<t_schema>::ms_schemaData;
 
 }; // namespace Memory
