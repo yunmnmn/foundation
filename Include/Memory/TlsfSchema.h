@@ -2,8 +2,11 @@
 
 #include <inttypes.h>
 #include <stdbool.h>
+#include <memory.h>
 
 #include <Memory/SchemaBase.h>
+
+#include <Util/Assert.h>
 
 #include <EASTL/unique_ptr.h>
 
@@ -18,48 +21,28 @@ class TlsfSchema : public SchemaBase
    struct LinkedPool
    {
       pool_t m_pool = nullptr;
-      pool_t m_next = nullptr;
+      LinkedPool m_next = nullptr;
    };
 
  public:
-   static eastl::unique_ptr<TlsfSchema> CreateSchema(const SchemaBase::Descriptor& p_desc)
-   {
-      return eastl::make_unique<TlsfSchema>(p_desc);
-   }
+   static eastl::unique_ptr<TlsfSchema> CreateSchema(const SchemaBase::Descriptor& p_desc);
+   static eastl::unique_ptr<TlsfSchema> CreateSchema(const SchemaBase::Descriptor& p_desc, void* p_address);
 
-   static eastl::unique_ptr<TlsfSchema> CreateSchema(const SchemaBase::Descriptor& p_desc, void* p_address)
-   {
-      TlsfSchema* schema = new (p_address) TlsfSchema(p_desc);
-      eastl::unique_ptr<TlsfSchema> test(schema);
-      return eastl::move(test);
-   }
+   void* Allocate(uint32_t p_size);
+   void* AllocateAligned(uint32_t p_size, uint32_t p_alignment, uint32_t p_offset);
 
-   void* Allocate(uint32_t p_size)
-   {
-   }
-
-   void* AllocateAligned(uint32_t p_size, uint32_t p_alignment, uint32_t p_offset)
-   {
-   }
-
-   void Deallocate(void* p_address, uint32_t p_size)
-   {
-   }
+   void Deallocate(void* p_address, uint32_t p_size);
 
  private:
-   TlsfSchema(const TlsfSchemaDescriptor& desc)
-   {
-      m_descriptor = desc;
+   TlsfSchema(const TlsfSchemaDescriptor& desc);
 
-      void* memory = malloc();
-      m_tlsf = tlsf_create_with_pool(memory);
-   }
+   // Allocate, and add the pool to the linked list
+   void AddPool(uint32_t p_size);
 
    tlsf_t m_tlsf = nullptr;
    LinkedPool m_linkedPool = {};
    SchemaBase::Descriptor m_descriptor = {};
    uint32_t m_poolCount = 0;
-   std::aligned_storage<sizeof(control_t), std::alignment_of<control_t>>::value > ::type m_controlData = {};
 };
 
 }; // namespace Memory

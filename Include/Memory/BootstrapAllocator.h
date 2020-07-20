@@ -10,13 +10,11 @@
 
 #include <Util/Assert.h>
 
-#include <tlsf.h>
-
 namespace Foundation
 {
 namespace Memory
 {
-// Bootstrap allocator,
+// Bootstrap allocator
 template <typename t_schema> class BootstrapAllocator
 {
    using AllocationDataType = std::aligned_storage<sizeof(t_schema), std::alignment_of<t_schema>>::value > ::type;
@@ -25,19 +23,19 @@ template <typename t_schema> class BootstrapAllocator
    static void* allocate(size_t p_size, int32_t p_flag = 0)
    {
       InitializeSchema();
-      m_schema->Allocate(p_size);
+      ms_schema->Allocate(p_size);
    }
 
    static void* allocate(size_t p_size, size_t p_alignment, size_t offset, int flags = 0)
    {
       InitializeSchema();
-      m_schema->AllocateAligned(p_size, p_alignment, offset);
+      ms_schema->AllocateAligned(p_size, p_alignment, offset);
    }
 
    static void deallocate(void* p, size_t n)
    {
-      ASSERT(m_schema.get(), "Bootstrap schema isn't initialized");
-      m_schema->Deallocate(p, n);
+      ASSERT(ms_schema.get(), "Bootstrap schema isn't initialized");
+      ms_schema->Deallocate(p, n);
    }
 
  private:
