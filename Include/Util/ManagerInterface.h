@@ -23,7 +23,7 @@ template <typename t_managerInterface> class ManagerInterface
    }
 
  private:
-   static t_managerInterface* ms_managerInterface = nullptr;
+   static inline t_managerInterface* ms_managerInterface = nullptr;
 };
 
 }; // namespace Util

@@ -4,9 +4,7 @@
 #include <stdbool.h>
 #include <memory.h>
 
-#include <Memory/SchemaBase.h>
-
-#include <Util/Assert.h>
+#include <Memory/BaseSchema.h>
 
 #include <EASTL/unique_ptr.h>
 
@@ -16,33 +14,27 @@ namespace Foundation
 {
 namespace Memory
 {
-class TlsfSchema : public SchemaBase
+class TlsfSchema : public BaseSchema
 {
-   struct LinkedPool
-   {
-      pool_t m_pool = nullptr;
-      LinkedPool m_next = nullptr;
-   };
-
  public:
-   static eastl::unique_ptr<TlsfSchema> CreateSchema(const SchemaBase::Descriptor& p_desc);
-   static eastl::unique_ptr<TlsfSchema> CreateSchema(const SchemaBase::Descriptor& p_desc, void* p_address);
+   static eastl::unique_ptr<TlsfSchema> CreateSchema(const BaseSchema::Descriptor& p_desc);
+   static eastl::unique_ptr<TlsfSchema> CreateSchema(const BaseSchema::Descriptor& p_desc, void* p_allocationAddress);
 
-   void* Allocate(uint32_t p_size);
-   void* AllocateAligned(uint32_t p_size, uint32_t p_alignment, uint32_t p_offset);
+   TlsfSchema(const BaseSchema::Descriptor& p_desc);
 
-   void Deallocate(void* p_address, uint32_t p_size);
+   void* AllocateInternal(uint32_t p_size) final;
+   void* AllocateAlignedInternal(uint32_t p_size, uint32_t p_alignment, uint32_t p_offset) final;
+   void DeallocateInternal(void* p_address, uint32_t p_size) final;
 
  private:
-   TlsfSchema(const TlsfSchemaDescriptor& desc);
-
-   // Allocate, and add the pool to the linked list
-   void AddPool(uint32_t p_size);
+   BaseSchema::PageDescriptor AddPageInternal(uint32_t p_size) final;
+   void RemovePageInternal(BaseSchema::PageDescriptor& p_pageDescriptor) final;
 
    tlsf_t m_tlsf = nullptr;
-   LinkedPool m_linkedPool = {};
-   SchemaBase::Descriptor m_descriptor = {};
-   uint32_t m_poolCount = 0;
+   uint32_t m_pageCount = 0u;
+
+   BaseSchema::PageDescriptor m_pageDescriptors[1024] = {};
+   uint32_t m_pageDescriptorIndex = 0u;
 };
 
 }; // namespace Memory

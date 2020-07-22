@@ -7,6 +7,7 @@
 
 #include <Memory/BootstrapAllocator.h>
 #include <Memory/MemoryManagerInterface.h>
+#include <Memory/TlsfSchema.h>
 
 #include <Util/HashName.h>
 
@@ -17,16 +18,11 @@ namespace Memory
 // Registers all the allocators used
 class MemoryManager : public MemoryManagerInterface
 {
-   void RegisterAllocator(AllocatorBase* allocator) final
-   {
-      m_allocators.emplace_back(allocator);
-   }
+   void RegisterAllocator(AllocatorBase* allocator) final;
 
-   AllocatorBase* GetAllocatorByName()
-   {
-   }
+   AllocatorBase* GetAllocatorByName();
 
-   eastl::vector<AllocatorBase*, BootstrapAllocator> m_allocators;
+   eastl::vector<AllocatorBase*, BootstrapAllocator<TlsfSchema>> m_allocators;
 };
 
 }; // namespace Memory

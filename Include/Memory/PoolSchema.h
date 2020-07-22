@@ -12,16 +12,12 @@ namespace Foundation
 namespace Memory
 {
 
-class PoolAllocator : public SchemaBase
+class PoolSchema : public SchemaBase
 {
  public:
-   NO_COPY_ASSIGN(PoolAllocator);
+   NO_COPY_ASSIGN(PoolSchema);
 
-   void Grow()
-   {
-   }
-
-   PoolAllocator(const Descriptor& p_descriptor)
+   PoolAllocator(const SchemaBase::Descriptor& p_desc) : SchemaBase(p_desc)
    {
    }
 

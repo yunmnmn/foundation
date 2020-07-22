@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Parallel/SpinAndSleepLock_Win.h>
+#include <Parallel/SpinAndSleepLock.h>
 
 namespace Foundation
 {

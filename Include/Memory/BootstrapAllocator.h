@@ -2,10 +2,9 @@
 
 #include <inttypes.h>
 #include <stdbool.h>
+#include <type_traits>
 
 #include <EASTL/unique_ptr.h>
-
-#include <Memory/SchemaBase.h>
 
 #include <Util/Assert.h>
 #include <Util/Util.h>
@@ -17,20 +16,20 @@ namespace Memory
 // Bootstrap allocator
 template <typename t_schema> class BootstrapAllocator
 {
-   using AllocationDataType = std::aligned_storage<sizeof(t_schema), std::alignment_of<t_schema>>::value > ::type;
+   using AllocationDataType = typename std::aligned_storage<sizeof(t_schema), std::alignment_of<t_schema>::value>::type;
 
  public:
    // EASTL specific functions
    static void* allocate(size_t p_size, int32_t p_flag = 0)
    {
       InitializeSchema();
-      ms_schema->Allocate(p_size);
+      return ms_schema->Allocate(p_size);
    }
 
    static void* allocate(size_t p_size, size_t p_alignment, size_t offset, int flags = 0)
    {
       InitializeSchema();
-      ms_schema->AllocateAligned(p_size, p_alignment, offset);
+      return ms_schema->AllocateAligned(p_size, p_alignment, offset);
    }
 
    static void deallocate(void* p, size_t n)
@@ -43,10 +42,12 @@ template <typename t_schema> class BootstrapAllocator
    static void InitializeSchema()
    {
       CallOnce(ms_initializedFlag, []() {
-         SchemaBase::Descriptor desc = {1u, 1024 * 4u};
+         // Create the schema descriptor
+         BaseSchema::Descriptor desc = {
+             .m_maxPageCount = 1u, .m_pageSize = 1024 * 4u, .m_addPoolCallback = nullptr, .m_removePoolCallback = nullptr};
 
          // Create the Schema
-         ms_schema = t_schema::CreateSchema(desc, ms_schemaData);
+         ms_schema = t_schema::CreateSchema(desc, (void*)&ms_schemaData);
       });
 
       ASSERT(ms_schema.get(), "Bootstrap schema isn't initialized");
@@ -60,7 +61,7 @@ template <typename t_schema> class BootstrapAllocator
 
 template <typename t_schema> eastl::unique_ptr<t_schema> BootstrapAllocator<t_schema>::ms_schema;
 template <typename t_schema> bool BootstrapAllocator<t_schema>::ms_initializedFlag = false;
-template <typename t_schema> BootstrapAllocator<t_schema>::AllocationDataType BootstrapAllocator<t_schema>::ms_schemaData;
+template <typename t_schema> typename BootstrapAllocator<t_schema>::AllocationDataType BootstrapAllocator<t_schema>::ms_schemaData;
 
 }; // namespace Memory
 }; // namespace Foundation

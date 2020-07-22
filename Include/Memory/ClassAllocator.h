@@ -5,8 +5,11 @@
 
 #include <Util/Assert.h>
 #include <Util/Macro.h>
+
 #include <Parallel/SpinLock.h>
+
 #include <Memory/AllocatorBase.h>
+#include <Memory/SchemaBase.h>
 
 #define CLASS_ALLOCATOR(_Class, _Allocator)                                                                                        \
    inline void* operator new(std::size_t size)                                                                                     \
@@ -26,7 +29,7 @@ namespace Foundation
 {
 namespace Memory
 {
-template <typename t_class, typename t_schema> class ClassAllocator
+template <typename t_class, typename t_schema> class ClassAllocator : public AllocatorBase
 {
  public:
    static void* Allocate(size_t p_size, int32_t p_flag = 0)
@@ -50,8 +53,9 @@ template <typename t_class, typename t_schema> class ClassAllocator
  private:
    static void InitializeSchema()
    {
-      std::call_once(ms_initializedFlag, []() {
-         SchemaBase::Descriptor desc = {1u, 1024 * 4u};
+      CallOnce(ms_initializedFlag, []() {
+         // Create the schema descriptor
+         SchemaBase::Descriptor desc = {.m_maxPageCount = 1024u, .m_pageSize = 1024 * sizeof(t_class)};
 
          // Create the Schema
          ms_schema = t_schema::CreateSchema(desc, ms_schemaData);
@@ -60,16 +64,7 @@ template <typename t_class, typename t_schema> class ClassAllocator
       ASSERT(ms_schema.get(), "Bootstrap schema isn't initialized");
    }
 
-   static void Allocate()
-   {
-      Get()->Allocate();
-   }
-
-   static void Deallocate(void* data, uint32_t size)
-   {
-   }
-
-   t_allocator* ms_allocator = nullptr;
+   template <typename t_schema> bool BootstrapAllocator<t_schema>::ms_initializedFlag = false;
    static std::aligned_storage<sizeof(t_allocator), std::alignment_of<t_allocato>>::value > ::type ms_allocatorData = {};
 };
 }; // namespace Memory

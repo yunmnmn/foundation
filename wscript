@@ -21,12 +21,17 @@ def build(bld):
    bld.stlib(
       source       = ['Source/Container/ContainerTypes.cpp',
                       'Source/FileSystem/FileSystem.cpp',
-                      'Source/Memory/Allocator.cpp',
                       'Source/Util/Assert.cpp',
                       'Source/Util/Atomic.cpp',
                       'Source/Util/HashName.cpp',
                       'Source/Util/Logger.cpp',
                       'Source/Util/MurmurHash3.cpp',
+                      'Source/Memory/BaseAllocator.cpp',
+                      'Source/Memory/BaseSchema.cpp',
+                      'Source/Memory/EastlAllocator.cpp',
+                      'Source/Memory/MemoryManager.cpp',
+                      'Source/Memory/PoolSchema.cpp',
+                      'Source/Memory/TlsfSchema.cpp',
                      ] 
                      + envSpecificSourcePath, 
 
