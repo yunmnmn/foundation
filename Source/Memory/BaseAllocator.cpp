@@ -12,28 +12,25 @@ namespace Foundation
 {
 namespace Memory
 {
-BaseAllocator::BaseAllocator()
+
+void* AllocatorInterface::Allocate(uint32_t p_size)
 {
-   MemoryManagerInterface::Get()->RegisterAllocator(this);
+   void* address = AllocateInternal(p_size);
+   TrackAllocation(address, p_size);
+   return address;
 }
 
-uint32_t BaseAllocator::GetPageCount() const
+void* AllocatorInterface::AllocateAllign(uint32_t p_size, uint32_t p_alignment)
 {
-   return 0u;
+   void* address = AllocateAlignInternal(p_size, p_alignment);
+   TrackAllocation(address, p_size);
+   return address;
 }
 
-void* BaseAllocator::Allocate(uint32_t p_size)
+void AllocatorInterface::Deallocate(void* p_address)
 {
-   return nullptr;
-}
-
-void* BaseAllocator::AllocateAllign(uint32_t p_size, uint32_t p_alignment)
-{
-   return nullptr;
-}
-
-void BaseAllocator::Deallocate(void* p_address)
-{
+   DeallocateInternal(p_address);
+   UntrackAllocation(p_address);
 }
 
 }; // namespace Memory

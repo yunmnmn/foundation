@@ -3,52 +3,67 @@
 #include <Util/Assert.h>
 #include <Util/Util.h>
 
+#include <Memory/MemoryManagerInterface.h>
+#include <Memory/BaseSchema.h>
+
 namespace Foundation
 {
 namespace Memory
 {
 EaStlAllocator::EaStlAllocator(const char* p_name)
+    : BaseAllocator<EaStlAllocator, TlsfSchema>("EaStlAllocator", [this]() -> BaseSchema::Descriptor { return GetDescriptor(); })
 {
 }
 
 EaStlAllocator::EaStlAllocator(const EaStlAllocator& p_other)
+    : BaseAllocator<EaStlAllocator, TlsfSchema>("EaStlAllocator", [this]() -> BaseSchema::Descriptor { return GetDescriptor(); })
 {
 }
 
 EaStlAllocator::EaStlAllocator(const EaStlAllocator& p_other, const char* p_name)
+    : BaseAllocator<EaStlAllocator, TlsfSchema>("EaStlAllocator", [this]() -> BaseSchema::Descriptor { return GetDescriptor(); })
 {
 }
 
-void* EaStlAllocator::allocate(size_t p_size, int32_t p_flag = 0)
+void* EaStlAllocator::allocate(size_t p_size, int32_t p_flag)
 {
-   InitializeSchema();
-   return ms_schema->Allocate(p_size);
+   return Allocate(p_size);
 }
 
-void* EaStlAllocator::allocate(size_t p_size, size_t p_alignment, size_t offset, int flags = 0)
+void* EaStlAllocator::allocate(size_t p_size, size_t p_alignment, size_t offset, int flags)
 {
-   InitializeSchema();
-   return ms_schema->AllocateAligned(p_size, p_alignment, offset);
+   return AllocateAllign(p_size, p_alignment);
 }
 
 void EaStlAllocator::deallocate(void* p, size_t n)
 {
-   ASSERT(ms_schema.get(), "Bootstrap schema isn't initialized");
-   ms_schema->Deallocate(p, n);
+   Deallocate(p);
 }
 
-void EaStlAllocator::InitializeSchema()
+void* EaStlAllocator::AllocateInternal(uint32_t p_size)
 {
-   CallOnce(ms_initializedFlag, []() {
-      // Create the schema descriptor
-      BaseSchema::Descriptor desc = {
-          .m_maxPageCount = 128u, .m_pageSize = 1024u * 1024u, .m_addPoolCallback = nullptr, .m_removePoolCallback = nullptr};
+   return ms_schema->Allocate(p_size);
+}
 
-      // Create the Schema
-      ms_schema = TlsfSchema::CreateSchema(desc, (void*)&ms_schemaData);
-   });
+void* EaStlAllocator::AllocateAlignInternal(uint32_t p_size, uint32_t p_alignment)
+{
+   // TODO FIx the parameters
+   return ms_schema->AllocateAligned(p_size, p_alignment, 0);
+}
 
-   ASSERT(ms_schema.get(), "Bootstrap schema isn't initialized");
+void EaStlAllocator::DeallocateInternal(void* p_pointer)
+{
+   // TODO FIx the parameters
+   ms_schema->Deallocate(p_pointer, 0);
+}
+
+BaseSchema::Descriptor EaStlAllocator::GetDescriptor()
+{
+   auto addPageLambda = [this](void* p_pageAddress) { AddPage(p_pageAddress); };
+   auto removePageLambda = [this](void* p_pageAddress) { RemovePage(p_pageAddress); };
+
+   BaseSchema::Descriptor desc = {1024u, 1024u * 1024u * 10u, addPageLambda, removePageLambda};
+   return desc;
 }
 
 }; // namespace Memory

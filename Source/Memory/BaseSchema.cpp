@@ -37,8 +37,6 @@ void BaseSchema::AddPage(uint32_t p_size)
    // Call the specialized function
    PageDescriptor pageDescriptor = AddPageInternal(p_size);
 
-   // Manage the pages here
-
    // Call the Allocator callback
    if (m_descriptor.m_addPoolCallback)
       m_descriptor.m_addPoolCallback(pageDescriptor.m_pageAddress);

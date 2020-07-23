@@ -5,18 +5,19 @@
 
 #include <Util/Assert.h>
 #include <Util/ManagerInterface.h>
+#include <Util/HashName.h>
 
 namespace Foundation
 {
 namespace Memory
 {
-class BaseAllocator;
+class AllocatorInterface;
 
 class MemoryManagerInterface : public Util::ManagerInterface<MemoryManagerInterface>
 {
  public:
-   virtual void RegisterAllocator(BaseAllocator* allocator) = 0;
-   virtual void UnregisterAllocator() = 0;
+   virtual void RegisterAllocator(HashName p_hashName, AllocatorInterface* allocator) = 0;
+   virtual void UnregisterAllocator(HashName p_hashName) = 0;
 };
 
 }; // namespace Memory

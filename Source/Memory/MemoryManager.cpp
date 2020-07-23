@@ -4,18 +4,13 @@ namespace Foundation
 {
 namespace Memory
 {
-void MemoryManager::RegisterAllocator(BaseAllocator* allocator)
+void MemoryManager::RegisterAllocator(HashName p_hashName, AllocatorInterface* p_allocator)
 {
-   m_allocators.emplace_back(allocator);
+   m_allocators[p_hashName.hash()] = p_allocator;
 }
 
-void MemoryManager::UnregisterAllocator()
+void MemoryManager::UnregisterAllocator(HashName p_hashName)
 {
-}
-
-BaseAllocator* Foundation::Memory::MemoryManager::GetAllocatorByName()
-{
-   return nullptr;
 }
 
 }; // namespace Memory

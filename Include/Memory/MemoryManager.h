@@ -3,27 +3,28 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
-#include <EASTL/vector.h>
+#include <EASTL/unordered_map.h>
 
 #include <Memory/BootstrapAllocator.h>
 #include <Memory/MemoryManagerInterface.h>
 #include <Memory/TlsfSchema.h>
-
-#include <Util/HashName.h>
+#include <Memory/BaseAllocator.h>
 
 namespace Foundation
 {
 namespace Memory
 {
+template <typename t_key, typename t_value>
+using unordered_map = eastl::unordered_map<t_key, t_value, eastl::hash<t_key>, eastl::equal_to<t_key>,
+                                           Memory::BootstrapAllocator<Memory::TlsfSchema>, false>;
+
 // Registers all the allocators used
 class MemoryManager : public MemoryManagerInterface
 {
-   void RegisterAllocator(BaseAllocator* allocator) final;
-   void UnregisterAllocator() final;
+   void RegisterAllocator(HashName p_hashName, AllocatorInterface* p_allocator) final;
+   void UnregisterAllocator(HashName p_hashName) final;
 
-   BaseAllocator* GetAllocatorByName();
-
-   eastl::vector<BaseAllocator*, BootstrapAllocator<TlsfSchema>> m_allocators;
+   unordered_map<uint64_t, AllocatorInterface*> m_allocators;
 };
 
 }; // namespace Memory

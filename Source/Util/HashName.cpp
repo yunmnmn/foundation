@@ -1,12 +1,13 @@
-#include <Util/HashName.h>
-
-#include <Util/Util.h>
 #include <Util/Assert.h>
+#include <Util/HashName.h>
+#include <Util/Util.h>
+
+#include <EASTL/string.h>
 
 namespace Foundation
 {
 //-----------------------------------------------------------------------------
-std::unordered_map<uint64_t, std::string> HashName::ms_StringRegistry;
+bstr::unordered_map<uint64_t, bstr::string> HashName::ms_StringRegistry;
 SpinLock HashName::ms_SpinLock;
 bool HashName::ms_initialized = false;
 //-----------------------------------------------------------------------------
@@ -23,13 +24,13 @@ HashName::HashName() : m_Hash(0u)
 {
    CallOnce(ms_initialized, [&]() {
       ms_SpinLock.lock();
-      std::string empty("");
+      bstr::string empty("test");
       ms_StringRegistry[0] = empty;
       ms_SpinLock.unlock();
    });
 }
 //-----------------------------------------------------------------------------
-HashName::HashName(const std::string& p_String) : m_Hash(0u)
+HashName::HashName(const bstr::string& p_String) : m_Hash(0u)
 {
    if (p_String.empty())
       return;
@@ -41,7 +42,6 @@ HashName::HashName(const std::string& p_String) : m_Hash(0u)
    const uint32_t hashLength = bufferLengthAlign64((uint32_t)p_String.length());
    ASSERT(hashLength < 1024, "That is a long string");
 
-   // Birth year, yay
    const uint32_t seed = 1991u;
 
    MurmurHash3_x64_64(buffer, hashLength, seed, (void*)&m_Hash);
@@ -52,11 +52,15 @@ HashName::HashName(const std::string& p_String) : m_Hash(0u)
    {
       ms_SpinLock.lock();
       ms_StringRegistry[m_Hash] = p_String;
-      m_cstring = ms_StringRegistry[m_Hash].c_str();
+      // m_cstring = ms_StringRegistry[m_Hash].c_str();
       ms_SpinLock.unlock();
    }
 
    // m_String = p_String;
+}
+//-----------------------------------------------------------------------------
+HashName::HashName(const char* p_string) : HashName(bstr::string(p_string))
+{
 }
 //-----------------------------------------------------------------------------
 HashName::HashName(const HashName& p_Rhs)

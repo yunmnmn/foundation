@@ -75,6 +75,7 @@ void TlsfSchema::DeallocateInternal(void* p_address, uint32_t p_size)
 BaseSchema::PageDescriptor TlsfSchema::AddPageInternal(uint32_t p_size)
 {
    // Calculate how many pages need to be allocated
+   // const uint32_t pageCount = p_size / m_descriptor.m_pageSize + (p_size % m_descriptor.m_pageSize == 0 ? 0u : 1u);
    const uint32_t pageCount = p_size / m_descriptor.m_pageSize + (p_size % m_descriptor.m_pageSize == 0 ? 0u : 1u);
    ASSERT(m_pageCount + pageCount <= m_descriptor.m_maxPageCount, "New poolcount will exceed the limit.");
 
