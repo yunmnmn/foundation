@@ -12,7 +12,6 @@ namespace Foundation
 {
 namespace Memory
 {
-
 BaseSchema::BaseSchema(const Descriptor& desc)
 {
    m_descriptor = desc;

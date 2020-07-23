@@ -18,8 +18,14 @@ template <typename t_managerInterface> class ManagerInterface
 
    static void Register(t_managerInterface* p_managerInterface)
    {
-      ASSERT(!p_managerInterface, "Trying to register an unvalid pointer");
+      ASSERT(p_managerInterface, "Trying to register an unvalid pointer");
       ms_managerInterface = p_managerInterface;
+   }
+
+   static void Unregister(t_managerInterface* p_managerInterface)
+   {
+      ASSERT(ms_managerInterface, "Trying to unregister an unvalid pointer");
+      ms_managerInterface = nullptr;
    }
 
  private:

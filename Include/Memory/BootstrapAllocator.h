@@ -20,6 +20,18 @@ template <typename t_schema> class BootstrapAllocator
 
  public:
    // EASTL specific functions
+   BootstrapAllocator(const char* pName = "BootstrapAllocator")
+   {
+   }
+
+   BootstrapAllocator(const BootstrapAllocator& x)
+   {
+   }
+
+   BootstrapAllocator(const BootstrapAllocator& x, const char* pName)
+   {
+   }
+
    static void* allocate(size_t p_size, int32_t p_flag = 0)
    {
       InitializeSchema();

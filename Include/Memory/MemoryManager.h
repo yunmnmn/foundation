@@ -18,11 +18,12 @@ namespace Memory
 // Registers all the allocators used
 class MemoryManager : public MemoryManagerInterface
 {
-   void RegisterAllocator(AllocatorBase* allocator) final;
+   void RegisterAllocator(BaseAllocator* allocator) final;
+   void UnregisterAllocator() final;
 
-   AllocatorBase* GetAllocatorByName();
+   BaseAllocator* GetAllocatorByName();
 
-   eastl::vector<AllocatorBase*, BootstrapAllocator<TlsfSchema>> m_allocators;
+   eastl::vector<BaseAllocator*, BootstrapAllocator<TlsfSchema>> m_allocators;
 };
 
 }; // namespace Memory

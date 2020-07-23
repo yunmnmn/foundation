@@ -10,13 +10,13 @@ namespace Foundation
 {
 namespace Memory
 {
-class AllocatorBase;
+class BaseAllocator;
 
 class MemoryManagerInterface : public Util::ManagerInterface<MemoryManagerInterface>
 {
  public:
-   virtual void RegisterAllocator(AllocatorBase* allocator) = 0;
-   virtual void UnregisterAllocator(AllocatorBase* allocator) = 0;
+   virtual void RegisterAllocator(BaseAllocator* allocator) = 0;
+   virtual void UnregisterAllocator() = 0;
 };
 
 }; // namespace Memory

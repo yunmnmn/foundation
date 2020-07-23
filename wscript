@@ -28,7 +28,7 @@ def build(bld):
                       'Source/Util/MurmurHash3.cpp',
                       'Source/Memory/BaseAllocator.cpp',
                       'Source/Memory/BaseSchema.cpp',
-                      'Source/Memory/EastlAllocator.cpp',
+                      'Source/Memory/EaStlAllocator.cpp',
                       'Source/Memory/MemoryManager.cpp',
                       'Source/Memory/PoolSchema.cpp',
                       'Source/Memory/TlsfSchema.cpp',

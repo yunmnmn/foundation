@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #include <Memory/BaseAllocator.h>
+#include <Memory/MemoryManagerInterface.h>
 
 #include <Util/Assert.h>
 
@@ -11,6 +12,10 @@ namespace Foundation
 {
 namespace Memory
 {
+BaseAllocator::BaseAllocator()
+{
+   MemoryManagerInterface::Get()->RegisterAllocator(this);
+}
 
 uint32_t BaseAllocator::GetPageCount() const
 {
