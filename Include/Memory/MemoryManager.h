@@ -21,10 +21,10 @@ using unordered_map = eastl::unordered_map<t_key, t_value, eastl::hash<t_key>, e
 // Registers all the allocators used
 class MemoryManager : public MemoryManagerInterface
 {
-   void RegisterAllocator(HashName p_hashName, AllocatorInterface* p_allocator) final;
+   void RegisterAllocator(HashName p_hashName, BaseAllocator* p_allocator) final;
    void UnregisterAllocator(HashName p_hashName) final;
 
-   unordered_map<uint64_t, AllocatorInterface*> m_allocators;
+   unordered_map<uint64_t, BaseAllocator*> m_allocators;
 };
 
 }; // namespace Memory

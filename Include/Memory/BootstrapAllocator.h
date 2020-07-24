@@ -9,6 +9,8 @@
 #include <Util/Assert.h>
 #include <Util/Util.h>
 
+#include <Memory/BaseSchema.h>
+
 namespace Foundation
 {
 namespace Memory
@@ -22,6 +24,7 @@ template <typename t_schema> class BootstrapAllocator
    // EASTL specific functions
    BootstrapAllocator(const char* pName = "BootstrapAllocator")
    {
+
       InitializeSchema();
    }
 
@@ -31,6 +34,11 @@ template <typename t_schema> class BootstrapAllocator
 
    BootstrapAllocator(const BootstrapAllocator& x, const char* pName)
    {
+   }
+
+   bool operator!=(const BootstrapAllocator& other)
+   {
+      return true;
    }
 
    static void* allocate(size_t p_size, int32_t p_flag = 0)
@@ -54,23 +62,22 @@ template <typename t_schema> class BootstrapAllocator
    {
       CallOnce(ms_initializedFlag, []() {
          // Create the schema descriptor
-         BaseSchema::Descriptor desc = {
-             .m_maxPageCount = 1u, .m_pageSize = 1024 * 4u, .m_addPoolCallback = nullptr, .m_removePoolCallback = nullptr};
+         BaseSchema::Descriptor desc = {.m_maxPageCount = 1u, .m_pageSize = 1024 * 4u};
 
          // Create the Schema
-         ms_schema = t_schema::CreateSchema(desc, (void*)&ms_schemaData);
+         ms_schema = t_schema::CreateSchema(desc, nullptr);
       });
 
       ASSERT(ms_schema.get(), "Bootstrap schema isn't initialized");
    }
 
-   static eastl::unique_ptr<t_schema> ms_schema;
+   static eastl::unique_ptr<BaseSchema> ms_schema;
    static bool ms_initializedFlag;
 
    static AllocationDataType ms_schemaData;
 };
 
-template <typename t_schema> eastl::unique_ptr<t_schema> BootstrapAllocator<t_schema>::ms_schema;
+template <typename t_schema> eastl::unique_ptr<BaseSchema> BootstrapAllocator<t_schema>::ms_schema;
 template <typename t_schema> bool BootstrapAllocator<t_schema>::ms_initializedFlag = false;
 template <typename t_schema> typename BootstrapAllocator<t_schema>::AllocationDataType BootstrapAllocator<t_schema>::ms_schemaData;
 

@@ -16,7 +16,7 @@ class AllocatorInterface;
 class MemoryManagerInterface : public Util::ManagerInterface<MemoryManagerInterface>
 {
  public:
-   virtual void RegisterAllocator(HashName p_hashName, AllocatorInterface* allocator) = 0;
+   virtual void RegisterAllocator(HashName p_hashName, BaseAllocator* allocator) = 0;
    virtual void UnregisterAllocator(HashName p_hashName) = 0;
 };
 

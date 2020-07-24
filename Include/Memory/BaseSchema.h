@@ -11,6 +11,8 @@ namespace Foundation
 {
 namespace Memory
 {
+class BaseAllocator;
+
 class BaseSchema
 {
  public:
@@ -18,9 +20,6 @@ class BaseSchema
    {
       uint32_t m_maxPageCount = 0u;
       uint32_t m_pageSize = 0u;
-
-      eastl::function<void(void*)> m_addPoolCallback;
-      eastl::function<void(void*)> m_removePoolCallback;
    };
 
    struct PageDescriptor
@@ -34,7 +33,7 @@ class BaseSchema
    void Deallocate(void* p_address, uint32_t p_size);
 
  protected:
-   BaseSchema(const Descriptor& desc);
+   BaseSchema(const Descriptor& desc, BaseAllocator* p_allocator);
 
    void AddPage(uint32_t p_size);
    void RemovePage(PageDescriptor& p_pageDescriptor);
@@ -48,6 +47,8 @@ class BaseSchema
 
    virtual PageDescriptor AddPageInternal(uint32_t p_size) = 0;
    virtual void RemovePageInternal(PageDescriptor& m_pageDescriptor) = 0;
+
+   BaseAllocator* m_allocator = nullptr;
 };
 
 }; // namespace Memory

@@ -15,24 +15,66 @@ namespace Foundation
 namespace Memory
 {
 // TlsfAllocator
-class EaStlAllocator : public BaseAllocator<EaStlAllocator, TlsfSchema>
+template <uint32_t t_pageCount, uint64_t t_pageSize> class EaStlAllocator : public BaseAllocator
 {
+   // TODO: overload the new and delete of this
  public:
-   // EASTL specific functions
-   EaStlAllocator(const char* p_name = "EaStlAllocator");
-   EaStlAllocator(const EaStlAllocator& p_other);
-   EaStlAllocator(const EaStlAllocator& p_other, const char* p_name);
+   static eastl::unique_ptr<BaseAllocator> CreateAllocator(HashName p_name)
+   {
+      // Create the allocator
+      auto eastlAllocator = eastl::make_unique<EaStlAllocator>(p_name.c_str());
 
-   void* allocate(size_t p_size, int32_t p_flag = 0);
-   void* allocate(size_t p_size, size_t p_alignment, size_t offset, int flags = 0);
-   void deallocate(void* p, size_t n);
+      return eastl::move(eastlAllocator);
+   }
+
+   // EASTL specific functions
+   EaStlAllocator(const char* p_name = "EaStlAllocator")
+       : BaseAllocator(p_name, eastl::move(TlsfSchema::CreateSchema({t_pageCount, t_pageSize}, this)))
+   {
+   }
+
+   EaStlAllocator(const EaStlAllocator& p_other)
+   {
+      // TODO
+   }
+
+   EaStlAllocator(const EaStlAllocator& p_other, const char* p_name)
+   {
+      // TODO
+   }
+
+   void* allocate(size_t p_size, int32_t p_flag = 0)
+   {
+      return Allocate(p_size);
+   }
+
+   void* allocate(size_t p_size, size_t p_alignment, size_t offset, int flags = 0)
+   {
+      return AllocateAllign(p_size, p_alignment);
+   }
+
+   void deallocate(void* p_address, size_t p_size)
+   {
+      Deallocate(p_address, p_size);
+   }
 
  private:
-   void* AllocateInternal(uint32_t p_size) final;
-   void* AllocateAlignInternal(uint32_t p_size, uint32_t p_alignment) final;
-   void DeallocateInternal(void* p_pointer) final;
+   void* AllocateInternal(uint64_t p_size) final
+   {
+      return m_schema->Allocate(p_size);
+   }
 
-   BaseSchema::Descriptor GetDescriptor();
+   void* AllocateAlignInternal(uint64_t p_size, uint32_t p_alignment) final
+   {
+      // TODO FIx the parameters
+      return m_schema->AllocateAligned(p_size, p_alignment, 0);
+   }
+
+   void DeallocateInternal(void* p_pointer, uint64_t p_size) final
+   {
+      // TODO FIx the parameters
+      m_schema->Deallocate(p_pointer, 0);
+   }
 };
 
 }; // namespace Memory

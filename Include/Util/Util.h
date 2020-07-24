@@ -12,8 +12,8 @@ template <typename Functor> void CallOnce(bool& called, Functor functor)
 {
    if (!called)
    {
-      functor();
       called = true;
+      functor();
    }
 }
 //---------------------------------------------------------------------------------//

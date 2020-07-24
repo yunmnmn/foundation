@@ -16,25 +16,15 @@ namespace Foundation
 {
 namespace Memory
 {
-eastl::unique_ptr<TlsfSchema> TlsfSchema::CreateSchema(const BaseSchema::Descriptor& p_desc)
+eastl::unique_ptr<BaseSchema> TlsfSchema::CreateSchema(const BaseSchema::Descriptor& p_desc, BaseAllocator* p_allocator)
 {
-   return eastl::make_unique<TlsfSchema>(p_desc);
+   return eastl::make_unique<TlsfSchema>(p_desc, p_allocator);
 }
 
-eastl::unique_ptr<TlsfSchema> TlsfSchema::CreateSchema(const BaseSchema::Descriptor& p_desc, void* p_allocationAddress)
-{
-   TlsfSchema* schema = new (p_allocationAddress) TlsfSchema(p_desc);
-   eastl::unique_ptr<TlsfSchema> uniquePtr(schema);
-   return eastl::move(uniquePtr);
-}
-
-TlsfSchema::TlsfSchema(const BaseSchema::Descriptor& p_desc) : BaseSchema(p_desc)
+TlsfSchema::TlsfSchema(const BaseSchema::Descriptor& p_desc, BaseAllocator* p_allocator) : BaseSchema(p_desc, p_allocator)
 {
    void* memory = malloc(tlsf_size());
    m_tlsf = tlsf_create(memory);
-
-   // Create the first page
-   AddPage(p_desc.m_pageSize);
 }
 
 void* TlsfSchema::AllocateInternal(uint32_t p_size)

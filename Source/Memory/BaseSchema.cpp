@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <memory.h>
 
+#include <Memory/BaseAllocator.h>
 #include <Memory/BaseSchema.h>
 
 #include <Util/Assert.h>
@@ -12,9 +13,10 @@ namespace Foundation
 {
 namespace Memory
 {
-BaseSchema::BaseSchema(const Descriptor& desc)
+BaseSchema::BaseSchema(const Descriptor& desc, BaseAllocator* p_allocator)
 {
    m_descriptor = desc;
+   m_allocator = p_allocator;
 }
 
 void* BaseSchema::Allocate(uint32_t p_size)
@@ -37,9 +39,9 @@ void BaseSchema::AddPage(uint32_t p_size)
    // Call the specialized function
    PageDescriptor pageDescriptor = AddPageInternal(p_size);
 
-   // Call the Allocator callback
-   if (m_descriptor.m_addPoolCallback)
-      m_descriptor.m_addPoolCallback(pageDescriptor.m_pageAddress);
+   // Call the BaseAllocator's AddPage function
+   if (m_allocator)
+      m_allocator->AddPage(pageDescriptor);
 }
 
 void BaseSchema::RemovePage(PageDescriptor& p_pageDescriptor)
@@ -47,9 +49,9 @@ void BaseSchema::RemovePage(PageDescriptor& p_pageDescriptor)
    // Call the specialized function
    RemovePageInternal(p_pageDescriptor);
 
-   // Call the Allocator callback
-   if (m_descriptor.m_removePoolCallback)
-      m_descriptor.m_removePoolCallback(p_pageDescriptor.m_pageAddress);
+   // Call the BaseAllocator's RemovePage function
+   if (m_allocator)
+      m_allocator->RemovePage(p_pageDescriptor.m_pageAddress);
 }
 
 }; // namespace Memory

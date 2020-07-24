@@ -14,13 +14,13 @@ namespace Foundation
 {
 namespace Memory
 {
+class BaseAllocator;
 class TlsfSchema : public BaseSchema
 {
  public:
-   static eastl::unique_ptr<TlsfSchema> CreateSchema(const BaseSchema::Descriptor& p_desc);
-   static eastl::unique_ptr<TlsfSchema> CreateSchema(const BaseSchema::Descriptor& p_desc, void* p_allocationAddress);
+   static eastl::unique_ptr<BaseSchema> CreateSchema(const BaseSchema::Descriptor& p_desc, BaseAllocator* p_allocator);
 
-   TlsfSchema(const BaseSchema::Descriptor& p_desc);
+   TlsfSchema(const BaseSchema::Descriptor& p_desc, BaseAllocator* p_allocator);
 
    void* AllocateInternal(uint32_t p_size) final;
    void* AllocateAlignedInternal(uint32_t p_size, uint32_t p_alignment, uint32_t p_offset) final;
