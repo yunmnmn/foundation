@@ -1,4 +1,5 @@
 #include <Memory/StaticEaStlAllocator.h>
+#include <Memory/EaStlAllocator.h>
 
 #include <Util/Assert.h>
 

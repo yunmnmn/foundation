@@ -7,7 +7,6 @@
 #include <EASTL/unique_ptr.h>
 
 #include <Memory/BaseAllocator.h>
-#include <Memory/BaseSchema.h>
 #include <Memory/TlsfSchema.h>
 
 namespace Foundation

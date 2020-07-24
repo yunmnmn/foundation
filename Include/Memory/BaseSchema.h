@@ -4,9 +4,6 @@
 #include <stdbool.h>
 #include <memory>
 
-#include <EASTL/functional.h>
-#include <EASTL/vector.h>
-
 namespace Foundation
 {
 namespace Memory

@@ -3,7 +3,6 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
-#include <Util/Assert.h>
 #include <Util/ManagerInterface.h>
 #include <Util/HashName.h>
 

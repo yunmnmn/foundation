@@ -6,12 +6,12 @@
 
 #include <EASTL/unique_ptr.h>
 
-#include <Memory/EaStlAllocator.h>
-
 namespace Foundation
 {
 namespace Memory
 {
+class BaseAllocator;
+
 // Static allocator
 class StaticEaStlAllocator
 {

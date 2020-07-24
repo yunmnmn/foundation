@@ -43,17 +43,18 @@ class BaseAllocator
       unordered_map<void*, Allocation> m_allocations;
    };
 
-   BaseAllocator(HashName p_allocatorName, eastl::unique_ptr<BaseSchema> p_schema);
-
    void* Allocate(uint64_t p_size);
    void* AllocateAllign(uint64_t p_size, uint32_t p_alignment);
    void Deallocate(void* p_address, uint64_t p_size);
 
-   void TrackAllocation(void* p_address, uint64_t p_size);
-   void UntrackAllocation(void* p_address);
-
    void AddPage(BaseSchema::PageDescriptor p_pageDescriptor);
    void RemovePage(void* p_pageAddress);
+
+ protected:
+   BaseAllocator(HashName p_allocatorName, eastl::unique_ptr<BaseSchema> p_schema);
+
+   void TrackAllocation(void* p_address, uint64_t p_size);
+   void UntrackAllocation(void* p_address);
 
    uint32_t GetPageCount() const;
 
@@ -61,7 +62,6 @@ class BaseAllocator
    virtual void* AllocateAlignInternal(uint64_t p_size, uint32_t p_alignment) = 0;
    virtual void DeallocateInternal(void* p_pointer, uint64_t p_size) = 0;
 
-   // Class specific create schema
    vector<Page> m_pages;
    eastl::unique_ptr<BaseSchema> m_schema = nullptr;
    HashName m_name;
