@@ -46,6 +46,7 @@ class BaseSchema
    virtual void RemovePageInternal(PageDescriptor& m_pageDescriptor) = 0;
 
    BaseAllocator* m_allocator = nullptr;
+   //test
 };
 
 }; // namespace Memory
