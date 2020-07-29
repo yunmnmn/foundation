@@ -14,7 +14,7 @@ def build(bld):
    bld.recurse(SUBFOLDERS, mandatory=False)
 
    # Get an array of environment specific source
-   envSpecificSourcePath = bld.GetSourcePathFromEnvironment("Source", ["Util/Mutex.cpp", "Parallel/SpinAndSleepLock.cpp"])
+   envSpecificSourcePath = bld.GetSourcePathFromEnvironment("Source", ["Parallel/SpinAndSleepLock.cpp"])
    # Get an array of environment specific includes
    envSpecificInclude = bld.GetIncludePathFromEnvironment("Include")
 
