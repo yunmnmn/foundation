@@ -12,6 +12,8 @@
 
 #include <tlsf.h>
 
+// TODO: make it thread-safe
+
 namespace Foundation
 {
 namespace Memory
@@ -78,7 +80,7 @@ BaseSchema::PageDescriptor TlsfSchema::AddPageInternal(uint32_t p_size)
    // Add the new pool for tlsf to allocate
    tlsf_add_pool(m_tlsf, pageAddress, pageSize);
 
-   // Find the latest entry in the linked pool
+   // Create a new page
    PageDescriptor pageDescriptor = {pageAddress, pageSize};
    m_pageDescriptors[m_pageDescriptorIndex++] = pageDescriptor;
 

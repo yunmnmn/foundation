@@ -21,7 +21,6 @@
    { /* default operator delete */                                                                                                 \
       if (p)                                                                                                                       \
       {                                                                                                                            \
-         AZ::AllocatorInstance<_Allocator>::Get().DeAllocate(p, size, AZStd::alignment_of<_Class>::value);                         \
       }                                                                                                                            \
    }
 
@@ -29,7 +28,8 @@ namespace Foundation
 {
 namespace Memory
 {
-template <typename t_class, typename t_schema> class ClassAllocator : public AllocatorBase
+template <typename t_class, typename t_schema>
+class ClassAllocator : public AllocatorBase
 {
  public:
    static void* Allocate(size_t p_size, int32_t p_flag = 0)
@@ -64,7 +64,8 @@ template <typename t_class, typename t_schema> class ClassAllocator : public All
       ASSERT(ms_schema.get(), "Bootstrap schema isn't initialized");
    }
 
-   template <typename t_schema> bool BootstrapAllocator<t_schema>::ms_initializedFlag = false;
+   template <typename t_schema>
+   bool BootstrapAllocator<t_schema>::ms_initializedFlag = false;
    static std::aligned_storage<sizeof(t_allocator), std::alignment_of<t_allocato>>::value > ::type ms_allocatorData = {};
 };
 }; // namespace Memory
