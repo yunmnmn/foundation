@@ -20,9 +20,9 @@ class TlsfSchema : public BaseSchema
  public:
    static eastl::unique_ptr<BaseSchema> CreateSchema(const BaseSchema::Descriptor& p_desc, BaseAllocator* p_allocator);
 
+ private:
    TlsfSchema(const BaseSchema::Descriptor& p_desc, BaseAllocator* p_allocator);
 
- private:
    void* AllocateInternal(uint32_t p_size) final;
    void* AllocateAlignedInternal(uint32_t p_size, uint32_t p_alignment, uint32_t p_offset) final;
    void DeallocateInternal(void* p_address, uint32_t p_size) final;

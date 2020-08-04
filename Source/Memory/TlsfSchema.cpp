@@ -4,13 +4,14 @@
 #include <stdbool.h>
 #include <memory.h>
 
-#include <Memory/TlsfSchema.h>
+#include <tlsf.h>
 
 #include <Memory/BaseSchema.h>
+#include <Memory/TlsfSchema.h>
 
 #include <Util/Assert.h>
 
-#include <tlsf.h>
+#include <Parallel/SpinLock.h>
 
 // TODO: make it thread-safe
 
@@ -20,7 +21,7 @@ namespace Memory
 {
 eastl::unique_ptr<BaseSchema> TlsfSchema::CreateSchema(const BaseSchema::Descriptor& p_desc, BaseAllocator* p_allocator)
 {
-   return eastl::make_unique<TlsfSchema>(p_desc, p_allocator);
+   return eastl::unique_ptr<BaseSchema>(new TlsfSchema(p_desc, p_allocator));
 }
 
 TlsfSchema::TlsfSchema(const BaseSchema::Descriptor& p_desc, BaseAllocator* p_allocator) : BaseSchema(p_desc, p_allocator)
@@ -31,6 +32,8 @@ TlsfSchema::TlsfSchema(const BaseSchema::Descriptor& p_desc, BaseAllocator* p_al
 
 void* TlsfSchema::AllocateInternal(uint32_t p_size)
 {
+   LockScopeGuard<SpinLock> spinLock();
+
    void* address = tlsf_malloc(m_tlsf, p_size);
    if (!address)
    {
@@ -46,6 +49,8 @@ void* TlsfSchema::AllocateInternal(uint32_t p_size)
 
 void* TlsfSchema::AllocateAlignedInternal(uint32_t p_size, uint32_t p_alignment, uint32_t p_offset)
 {
+   LockScopeGuard<SpinLock> spinLock();
+
    void* address = tlsf_memalign(m_tlsf, p_alignment, p_size);
    if (!address)
    {
@@ -61,6 +66,8 @@ void* TlsfSchema::AllocateAlignedInternal(uint32_t p_size, uint32_t p_alignment,
 
 void TlsfSchema::DeallocateInternal(void* p_address, uint32_t p_size)
 {
+   LockScopeGuard<SpinLock> spinLock();
+
    tlsf_free(m_tlsf, p_address);
 }
 
