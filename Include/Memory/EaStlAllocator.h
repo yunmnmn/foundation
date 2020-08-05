@@ -14,7 +14,8 @@ namespace Foundation
 namespace Memory
 {
 // TlsfAllocator
-template <uint32_t t_pageCount, uint64_t t_pageSize> class EaStlAllocator : public BaseAllocator
+template <uint32_t t_pageCount, uint64_t t_pageSize>
+class EaStlAllocator : public BaseAllocator
 {
    // TODO: overload the new and delete of this
  public:

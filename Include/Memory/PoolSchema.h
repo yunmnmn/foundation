@@ -20,7 +20,7 @@ namespace Memory
 {
 class BaseAllocator;
 
-template <typename t_elementType, size_t t_pageCount>
+template <typename t_elementType, size_t t_pageCount, size_t t_pageElementCount>
 class PoolSchema : public BaseSchema
 {
    class Page
@@ -59,7 +59,7 @@ class PoolSchema : public BaseSchema
       // Allocate an element that hasn't been used yet
       inline void* AllocateElement()
       {
-         if (m_elementIndex < t_pageCount)
+         if (m_elementIndex < t_pageElementCount)
          {
             // increment the element index
             const uint32_t index = m_elementIndex++;
@@ -87,7 +87,7 @@ class PoolSchema : public BaseSchema
       // Checks if the page is already full
       inline bool IsFull()
       {
-         return m_elementCount >= t_pageCount;
+         return m_elementCount >= t_pageElementCount;
       }
 
       inline bool IsEmpty()
@@ -99,16 +99,16 @@ class PoolSchema : public BaseSchema
       auto GetAllocatedMemoryRange()
       {
          const uint64_t start = static_cast<uint64_t>(&m_objects[0u]);
-         const uint64_t end = static_cast<uint64_t>(&m_objects[t_pageCount - 1u]);
+         const uint64_t end = static_cast<uint64_t>(&m_objects[t_pageElementCount - 1u]);
          ASSERT(end > start, "The allocated page range isn't correct");
          return eastl::make_tuple<uint64_t, uint64_t>(start, end);
       }
 
     private:
       // Array of objects
-      t_elementType m_objects[t_pageCount] = {};
+      t_elementType m_objects[t_pageElementCount] = {};
       // List of elements that link to the next free index
-      uint32_t m_nextIndex[t_pageCount] = {InvalidElementIndex};
+      uint32_t m_nextIndex[t_pageElementCount] = {InvalidElementIndex};
 
       // Current element index
       uint32_t m_elementIndex = 0u;
@@ -123,12 +123,15 @@ class PoolSchema : public BaseSchema
 
    const uint32_t InvalidElementIndex = static_cast<uint32_t>(-1);
 
-   using PoolSchemaType = PoolSchema<t_elementType, t_pageCount>;
+   using PoolSchemaType = PoolSchema<t_elementType, t_pageCount, t_pageElementCount>;
 
  public:
    static eastl::unique_ptr<BaseSchema> CreateSchema(const BaseSchema::Descriptor& p_desc, BaseAllocator* p_allocator)
    {
-      return eastl::unique_ptr<BaseSchema>(new PoolSchemaType(p_desc, p_allocator));
+      // NOTE: Ignore the descriptor, create one from the templated arguments
+      BaseSchema::Descriptor descriptor = {.m_maxPageCount = t_m_maxPageCount,
+                                           .m_pageSize = sizeof(t_elementType) * t_pageElementCount};
+      return eastl::unique_ptr<BaseSchema>(new PoolSchemaType(descriptor, p_allocator));
    }
 
    ~PoolSchema()
@@ -243,6 +246,8 @@ class PoolSchema : public BaseSchema
 
    PageDescriptor AddPageInternal(uint32_t p_size) final
    {
+      ASSERT(m_pageCount < t_pageCount, "Trying to allocate too many pages");
+
       Page* page = new Page();
 
       Page* emptyPage = m_pages;

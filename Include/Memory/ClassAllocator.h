@@ -8,19 +8,21 @@
 
 #include <Parallel/SpinLock.h>
 
-#include <Memory/AllocatorBase.h>
-#include <Memory/SchemaBase.h>
+#include <Memory/BaseAllocator.h>
+#include <Memory/BaseSchema.h>
 
-#define CLASS_ALLOCATOR(_Class, _Allocator)                                                                                        \
-   inline void* operator new(std::size_t size)                                                                                     \
+#include <EASTL/unique_ptr.h>
+
+#define CLASS_ALLOCATOR(t_class, t_schema)                                                                                         \
+   inline void* operator new(std::size_t p_size)                                                                                   \
    {                                                                                                                               \
-      return Foundation::Memory::ClassAllocator<_Class, _Allocator, _DescriptorFunctor>::Get().Allocate(                           \
-          size, std::alignment_of<_Class>::value, #_Class);                                                                        \
+      return Foundation::Memory::StaticClassAllocator<t_class, t_schema>::Get().Allocate(size);                                    \
    }                                                                                                                               \
-   inline void operator delete(void* p, std::size_t size)                                                                          \
-   { /* default operator delete */                                                                                                 \
-      if (p)                                                                                                                       \
+   inline void operator delete(void* p_address, std::size_t p_size)                                                                \
+   {                                                                                                                               \
+      if (p_address)                                                                                                               \
       {                                                                                                                            \
+         return Foundation::Memory::StaticClassAllocator<t_class, t_schema>::Get().Deallocate(p_address, p_size);                  \
       }                                                                                                                            \
    }
 
@@ -29,45 +31,71 @@ namespace Foundation
 namespace Memory
 {
 template <typename t_class, typename t_schema>
-class ClassAllocator : public AllocatorBase
+class ClassAllocator : public BaseAllocator
 {
  public:
-   static void* Allocate(size_t p_size, int32_t p_flag = 0)
+   static eastl::unique_ptr<BaseAllocator> CreateAllocator()
+   {
+      // Create the allocator
+      // TODO: does this work for templates?
+      auto classAllocator = eastl::make_unique<ClassAllocator<t_class, t_schema>>(typeid(t_class).name());
+      return eastl::move(classAllocator);
+   }
+
+   void* Allocate(size_t p_size, int32_t p_flag = 0)
    {
       InitializeSchema();
       ms_schema->Allocate(p_size);
    }
 
-   static void* AllocateAligned(size_t p_size, size_t p_alignment, size_t offset, int flags = 0)
+   void* AllocateAligned(size_t p_size, size_t p_alignment, size_t offset, int flags = 0)
    {
       InitializeSchema();
       ms_schema->AllocateAligned(p_size, p_alignment, offset);
    }
 
-   static void Deallocate(void* p, size_t n)
+   void Deallocate(void* p, size_t n)
    {
       ASSERT(ms_schema.get(), "Bootstrap schema isn't initialized");
       ms_schema->Deallocate(p, n);
    }
 
  private:
-   static void InitializeSchema()
+   ClassAllocator() : BaseAllocator(#t_class, eastl::move(t_schema::CreateSchema()))
    {
-      CallOnce(ms_initializedFlag, []() {
-         // Create the schema descriptor
-         SchemaBase::Descriptor desc = {.m_maxPageCount = 1024u, .m_pageSize = 1024 * sizeof(t_class)};
+   }
+};
 
-         // Create the Schema
-         ms_schema = t_schema::CreateSchema(desc, ms_schemaData);
-      });
-
-      ASSERT(ms_schema.get(), "Bootstrap schema isn't initialized");
+template <typename t_class, typename t_schema>
+class StaticClassAllocator
+{
+ public:
+   static void* Allocate(size_t p_size, int32_t p_flag = 0)
+   {
    }
 
-   template <typename t_schema>
-   bool BootstrapAllocator<t_schema>::ms_initializedFlag = false;
-   static std::aligned_storage<sizeof(t_allocator), std::alignment_of<t_allocato>>::value > ::type ms_allocatorData = {};
+   static void* AllocateAligned(size_t p_size, size_t p_alignment, size_t p_offset, int p_flags = 0)
+   {
+   }
+
+   static void Deallocate(void* p_address, size_t p_size)
+   {
+   }
+
+ private:
+   static void initializeAllocator()
+   {
+      CallOnce(ms_initializedFlag, []() {
+         const uint32_t PageCount = 1024u;
+         const uint64_t PageSize = 1024 * 1024 * 10u;
+         ms_allocator = eastl::move(ClassAllocator<t_class, t_schema>::CreateAllocator("StaticEaStlAllocator"));
+      });
+   }
+
+   static eastl::unique_ptr<BaseAllocator> ms_allocator;
+   static bool ms_initializedFlag;
 };
+
 }; // namespace Memory
 }; // namespace Foundation
 //-----------------------------------------------------------------------------

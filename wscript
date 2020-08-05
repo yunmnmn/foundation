@@ -30,9 +30,9 @@ def build(bld):
                       'Source/Memory/BaseSchema.cpp',
                       'Source/Memory/EaStlAllocator.cpp',
                       'Source/Memory/MemoryManager.cpp',
-                      'Source/Memory/PoolSchema.cpp',
                       'Source/Memory/TlsfSchema.cpp',
-                      'Source/Memory/StaticEaStlAllocator.cpp'
+                      'Source/Memory/StaticEaStlAllocator.cpp',
+                      'Source/Parallel/SpinLock.cpp'
                      ] 
                      + envSpecificSourcePath, 
 
