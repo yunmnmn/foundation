@@ -28,7 +28,7 @@ class EaStlAllocator : public BaseAllocator
    }
 
    // EASTL specific functions
-   EaStlAllocator(const char* p_name = "EaStlAllocator")
+   EaStlAllocator(const char* p_name)
        : BaseAllocator(p_name, eastl::move(TlsfSchema::CreateSchema({t_pageCount, t_pageSize}, this)))
    {
    }

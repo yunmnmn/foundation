@@ -146,6 +146,8 @@ class PoolSchema : public BaseSchema
 
    void* AllocateInternal(uint32_t p_size) final
    {
+      ASSERT(p_size < sizeof(t_elementType), "The requested size is larger than the element type");
+
       LockScopeGuard<SpinLock> spinLock;
 
       const auto allocateFromPages = [m_pages]() -> void* {

@@ -16,7 +16,7 @@
 #define CLASS_ALLOCATOR(t_class, t_schema)                                                                                         \
    inline void* operator new(std::size_t p_size)                                                                                   \
    {                                                                                                                               \
-      return Foundation::Memory::StaticClassAllocator<t_class, t_schema>::Get().Allocate(size);                                    \
+      return Foundation::Memory::StaticClassAllocator<t_class, t_schema>::Get().Allocate(size, #t_class);                          \
    }                                                                                                                               \
    inline void operator delete(void* p_address, std::size_t p_size)                                                                \
    {                                                                                                                               \
@@ -34,11 +34,11 @@ template <typename t_class, typename t_schema>
 class ClassAllocator : public BaseAllocator
 {
  public:
-   static eastl::unique_ptr<BaseAllocator> CreateAllocator()
+   static eastl::unique_ptr<BaseAllocator> CreateAllocator(HashName p_name)
    {
       // Create the allocator
       // TODO: does this work for templates?
-      auto classAllocator = eastl::make_unique<ClassAllocator<t_class, t_schema>>(typeid(t_class).name());
+      auto classAllocator = eastl::make_unique<ClassAllocator<t_class, t_schema>>(p_name);
       return eastl::move(classAllocator);
    }
 
@@ -61,7 +61,7 @@ class ClassAllocator : public BaseAllocator
    }
 
  private:
-   ClassAllocator() : BaseAllocator(#t_class, eastl::move(t_schema::CreateSchema()))
+   ClassAllocator(HashName p_name) : BaseAllocator(p_name, eastl::move(t_schema::CreateSchema()))
    {
    }
 };
@@ -70,26 +70,29 @@ template <typename t_class, typename t_schema>
 class StaticClassAllocator
 {
  public:
-   static void* Allocate(size_t p_size, int32_t p_flag = 0)
+   static void* Allocate(size_t p_size, const char* p_name)
    {
+      initializeAllocator(p_name);
+      return ms_allocator->Allocate(p_size);
    }
 
    static void* AllocateAligned(size_t p_size, size_t p_alignment, size_t p_offset, int p_flags = 0)
    {
+      initializeAllocator(p_name);
+      return ms_allocator->AllocateAllign(p_size, p_alignment);
    }
 
    static void Deallocate(void* p_address, size_t p_size)
    {
+      initializeAllocator(p_name);
+      ms_allocator->Deallocate(p_address);
    }
 
  private:
-   static void initializeAllocator()
+   static void initializeAllocator(const char* p_name)
    {
-      CallOnce(ms_initializedFlag, []() {
-         const uint32_t PageCount = 1024u;
-         const uint64_t PageSize = 1024 * 1024 * 10u;
-         ms_allocator = eastl::move(ClassAllocator<t_class, t_schema>::CreateAllocator("StaticEaStlAllocator"));
-      });
+      CallOnce(ms_initializedFlag,
+               []() { ms_allocator = eastl::move(ClassAllocator<t_class, t_schema>::CreateAllocator(p_name)); });
    }
 
    static eastl::unique_ptr<BaseAllocator> ms_allocator;
