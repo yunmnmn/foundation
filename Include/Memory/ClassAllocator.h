@@ -37,7 +37,6 @@ class ClassAllocator : public BaseAllocator
    static eastl::unique_ptr<BaseAllocator> CreateAllocator(HashName p_name)
    {
       // Create the allocator
-      // TODO: does this work for templates?
       auto classAllocator = eastl::make_unique<ClassAllocator<t_class, t_schema>>(p_name);
       return eastl::move(classAllocator);
    }
@@ -84,7 +83,7 @@ class StaticClassAllocator
 
    static void Deallocate(void* p_address, size_t p_size)
    {
-      initializeAllocator(p_name);
+      ASSERT(ms_allocator.get() != nullptr, "Allocator isn't initalized yet");
       ms_allocator->Deallocate(p_address);
    }
 

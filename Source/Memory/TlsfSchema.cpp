@@ -12,6 +12,7 @@
 #include <Util/Assert.h>
 
 #include <Parallel/SpinLock.h>
+#include <Parallel/LockScopeGuard.h>
 
 // TODO: make it thread-safe
 
@@ -32,7 +33,7 @@ TlsfSchema::TlsfSchema(const BaseSchema::Descriptor& p_desc, BaseAllocator* p_al
 
 void* TlsfSchema::AllocateInternal(uint32_t p_size)
 {
-   LockScopeGuard<SpinLock> spinLock();
+   LockScopeGuard<SpinLock> spinLock;
 
    void* address = tlsf_malloc(m_tlsf, p_size);
    if (!address)
@@ -49,7 +50,7 @@ void* TlsfSchema::AllocateInternal(uint32_t p_size)
 
 void* TlsfSchema::AllocateAlignedInternal(uint32_t p_size, uint32_t p_alignment, uint32_t p_offset)
 {
-   LockScopeGuard<SpinLock> spinLock();
+   LockScopeGuard<SpinLock> spinLock;
 
    void* address = tlsf_memalign(m_tlsf, p_alignment, p_size);
    if (!address)
@@ -66,7 +67,7 @@ void* TlsfSchema::AllocateAlignedInternal(uint32_t p_size, uint32_t p_alignment,
 
 void TlsfSchema::DeallocateInternal(void* p_address, uint32_t p_size)
 {
-   LockScopeGuard<SpinLock> spinLock();
+   LockScopeGuard<SpinLock> spinLock;
 
    tlsf_free(m_tlsf, p_address);
 }

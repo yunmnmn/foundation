@@ -8,7 +8,8 @@
 namespace Foundation
 {
 //-----------------------------------------------------------------------------
-template <typename Functor> void CallOnce(bool& called, Functor functor)
+template <typename Functor>
+void CallOnce(bool& called, Functor functor)
 {
    if (!called)
    {
@@ -31,44 +32,6 @@ inline std::string simpleSprintf(const char* p_Format, ...)
 
    return std::string(buffer);
 }
-//-----------------------------------------------------------------------------
-class SpinLock
-{
-   std::atomic_flag locked = ATOMIC_FLAG_INIT;
-
- public:
-   void lock()
-   {
-      while (locked.test_and_set(std::memory_order_acquire))
-      {
-      }
-   }
-   void unlock()
-   {
-      locked.clear(std::memory_order_release);
-   }
-};
-//-----------------------------------------------------------------------------
-template <typename t_Lock> class ScopedGuard
-{
-   t_Lock& m_Mutex;
-
- public:
-   ScopedGuard(t_Lock& p_Mutex) : m_Mutex(p_Mutex)
-   {
-      m_Mutex.lock();
-   }
-
-   ~ScopedGuard()
-   {
-      m_Mutex.unlock();
-   }
-
-   void forceUnlock()
-   {
-      m_Mutex.unlock();
-   }
-};
 //-----------------------------------------------------------------------------
 // Simple Linear congruential generator
 class LcgRandom
