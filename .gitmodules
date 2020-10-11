@@ -1,6 +1,0 @@
-[submodule "ThirdParty/TLSF/Code"]
-	path = ThirdParty/TLSF/Code
-	url = git@github.com:mattconte/tlsf.git
-[submodule "ThirdParty/EASTL/Code"]
-	path = ThirdParty/EASTL/Code
-	url = git@github.com:electronicarts/EASTL.git
