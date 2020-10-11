@@ -1,6 +1,3 @@
-[submodule "Extern/EASTL/3.17.00"]
-	path = Extern/EASTL/3.17.00
-	url = git@github.com:electronicarts/EASTL.git
 [submodule "Extern/tlsf/1.0.0"]
 	path = Extern/tlsf/1.0.0
 	url = git@github.com:mattconte/tlsf.git
