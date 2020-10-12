@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.5.1)
 
+# Check if it's a root CMakeList or a added subdirectory
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+
+endif()
+
 project(
    Foundation
    VERSION 0.0.1
