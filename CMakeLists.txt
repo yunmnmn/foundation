@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 3.5.1)
 
 # Check if it's a root CMakeList or a added subdirectory
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-
+   list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMakeUtils)
+   include(Utils.cmake)
 endif()
 
 project(
@@ -16,9 +17,6 @@ project(
 set(CMAKE_CXX_STANDARD 17)
 
 add_subdirectory(Extern)
-
-# Append the modules of the third party libraries of this
-#list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake/ThirdParty
 
 # Define the library
 add_library(Foundation)
