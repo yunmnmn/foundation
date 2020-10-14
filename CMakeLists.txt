@@ -1,10 +1,11 @@
-cmake_minimum_required(VERSION 3.5.1)
+cmake_minimum_required(VERSION 3.13.1)
 
 # Check if it's a root CMakeList or a added subdirectory
-if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-   list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMakeUtils)
-   include(Utils.cmake)
-endif()
+#if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeUtils")
+#endif()
+
+include(Utils)
 
 project(
    Foundation
@@ -21,7 +22,9 @@ add_subdirectory(Extern)
 # Define the library
 add_library(Foundation)
 
-#TODO: create a helper function that adds the platform specific files
+# Get the platform specific sources
+PlatformSource(platformSource)
+message(${platformSource})
 target_sources(
    Foundation 
    PRIVATE 
@@ -39,15 +42,20 @@ target_sources(
       Source/Util/HashName.cpp
       Source/Util/Logger.cpp
       Source/Util/MurmurHash3.cpp
+      # Include the platform specific files
+      ${platformSource}
 )
 
-#TODO: create a helper f unction that includes the platform specific files
+# Get the platform specific includes
+PlatformPath(platformInclude)
 target_include_directories(
    Foundation
    PRIVATE
       Source
    PUBLIC
       Include
+      # Include the platform specific includes
+      Include/${platformInclude}
 )
 
 set_target_properties(

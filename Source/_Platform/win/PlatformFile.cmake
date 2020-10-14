@@ -1,3 +1,3 @@
-Set(Files
+Set(sources
 Parallel/SpinAndSleepLock.cpp
 )
