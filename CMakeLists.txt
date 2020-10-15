@@ -24,7 +24,6 @@ add_library(Foundation)
 
 # Get the platform specific sources
 PlatformSource(platformSource)
-message(${platformSource})
 target_sources(
    Foundation 
    PRIVATE 
@@ -67,7 +66,7 @@ set_target_properties(
 target_link_libraries(
    Foundation
    PUBLIC
-      #EASTL
+      EASTL
    PRIVATE
       tlsf
 )
