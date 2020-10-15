@@ -4,3 +4,6 @@
 [submodule "CMakeUtils"]
 	path = CMakeUtils
 	url = git@github.com:yunmnmn/CMakeUtils.git
+[submodule "Extern/EASTL/3.17.00"]
+	path = Extern/EASTL/3.17.00
+	url = git@github.com:electronicarts/EASTL.git
