@@ -13,6 +13,8 @@
 #include <EASTL/string.h>
 #include <EASTL/unordered_map.h>
 
+#include <mutex>
+
 namespace Foundation
 {
 namespace bstr
@@ -33,23 +35,22 @@ struct HashName
    HashName();
    HashName(const bstr::string& p_String);
    HashName(const char* p_string);
-   HashName(const HashName& p_Rhs);
-   ~HashName();
-
+   HashName(const HashName& p_Rhs) = default;
    bool operator==(const HashName& p_Rhs);
-   const char* c_str() const;
 
-   const uint64_t hash() const
-   {
-      return m_Hash;
-   }
+   ~HashName() = default;
+
+   // Get the c_string
+   const char* GetCStr() const;
+
+   // Get the HashName's hash
+   const uint64_t Hash() const;
 
  private:
    uint64_t m_Hash = 0u;
-   // char* m_cstring = nullptr;
 
    static bstr::unordered_map<uint64_t, bstr::string> ms_StringRegistry;
-   static SpinLock ms_SpinLock;
+   static std::mutex ms_hashNameMutex;
    static bool ms_initialized;
 };
 }; // namespace Foundation

@@ -8,7 +8,7 @@ namespace Foundation
 {
 //-----------------------------------------------------------------------------
 bstr::unordered_map<uint64_t, bstr::string> HashName::ms_StringRegistry;
-SpinLock HashName::ms_SpinLock;
+std::mutex HashName::ms_hashNameMutex;
 bool HashName::ms_initialized = false;
 //-----------------------------------------------------------------------------
 namespace
@@ -22,11 +22,11 @@ namespace Internal
 //-----------------------------------------------------------------------------
 HashName::HashName() : m_Hash(0u)
 {
-   CallOnce(ms_initialized, [&]() {
-      ms_SpinLock.lock();
+   CallOnce(ms_initialized, [&]() 
+   {
+      std::lock_guard<std::mutex> lock(ms_hashNameMutex);
       bstr::string empty("test");
       ms_StringRegistry[0] = empty;
-      ms_SpinLock.unlock();
    });
 }
 //-----------------------------------------------------------------------------
@@ -50,26 +50,12 @@ HashName::HashName(const bstr::string& p_String) : m_Hash(0u)
    ASSERT(m_Hash != 0u, "Don't assign the hash at the 0 index");
 
    {
-      ms_SpinLock.lock();
+      std::lock_guard<std::mutex> lock(ms_hashNameMutex);
       ms_StringRegistry[m_Hash] = p_String;
-      // m_cstring = ms_StringRegistry[m_Hash].c_str();
-      ms_SpinLock.unlock();
    }
-
-   // m_String = p_String;
 }
 //-----------------------------------------------------------------------------
 HashName::HashName(const char* p_string) : HashName(bstr::string(p_string))
-{
-}
-//-----------------------------------------------------------------------------
-HashName::HashName(const HashName& p_Rhs)
-{
-   m_Hash = p_Rhs.m_Hash;
-   // m_String = p_Rhs.m_String;
-}
-//-----------------------------------------------------------------------------
-HashName::~HashName()
 {
 }
 //-----------------------------------------------------------------------------
@@ -78,12 +64,17 @@ bool HashName::operator==(const HashName& p_Rhs)
    return m_Hash == p_Rhs.m_Hash;
 }
 //-----------------------------------------------------------------------------
-const char* HashName::c_str() const
+const char* HashName::GetCStr() const
 {
    const auto& it = ms_StringRegistry.find(m_Hash);
    ASSERT(it != ms_StringRegistry.end(), "String is not set in hash map");
 
    return it->second.c_str();
+}
+//-----------------------------------------------------------------------------
+const uint64_t HashName::Hash() const
+{
+   return m_Hash;
 }
 //-----------------------------------------------------------------------------
 }; // namespace Foundation

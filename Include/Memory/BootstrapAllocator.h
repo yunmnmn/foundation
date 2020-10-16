@@ -24,7 +24,6 @@ template <typename t_schema> class BootstrapAllocator
    // EASTL specific functions
    BootstrapAllocator(const char* pName = "BootstrapAllocator")
    {
-
       InitializeSchema();
    }
 
