@@ -1,58 +1,19 @@
-#pragma once
-
-#include <inttypes.h>
-#include <stdbool.h>
-
 #include <Memory/BaseAllocator.h>
-#include <Memory/MemoryManagerInterface.h>
-
-#include <Util/Assert.h>
 
 namespace Foundation
 {
 namespace Memory
 {
-BaseAllocator::BaseAllocator(HashName p_allocatorName, eastl::unique_ptr<BaseSchema> p_schema)
+
+AllocatorTracker::AllocatorTracker(HashName p_allocatorName)
 {
    // Register the allocator in the manager
    MemoryManagerInterface::Get()->RegisterAllocator(p_allocatorName, this);
-
-   // Set the schema
-   ASSERT(p_schema != nullptr, "Schema must be valid");
-   m_schema = eastl::move(p_schema);
-
-   // Set the name
-   m_name = p_allocatorName;
 }
 
-void* BaseAllocator::Allocate(uint64_t p_size)
+void AllocatorTracker::TrackAllocation(AllocationDescriptor& p_address, uint64_t p_size)
 {
-   AllocationDescriptor desc = AllocateInternal(p_size);
-   TrackAllocation(desc, p_size);
-   return desc.m_address;
-}
-
-void* BaseAllocator::AllocateAllign(uint64_t p_size, uint32_t p_alignment)
-{
-   AllocationDescriptor desc = AllocateAlignInternal(p_size, p_alignment);
-   TrackAllocation(desc, p_size);
-   return desc.m_address;
-}
-
-void BaseAllocator::Deallocate(void* p_address, uint64_t p_size)
-{
-   DeallocateInternal(p_address, p_size);
-   UntrackAllocation(p_address);
-}
-
-uint32_t BaseAllocator::GetPageCount() const
-{
-   return 0u;
-}
-
-void BaseAllocator::TrackAllocation(AllocationDescriptor& p_address, uint64_t p_size)
-{
-   // Check if it's a new page
+   std::lock_guard<std::mutex> guard(m_memoryTrackingMutex);
 
    // Find the page where the allocation is placed
    auto pageIt = eastl::find_if(m_pages.begin(), m_pages.end(), [p_address](const Page& page) {
@@ -80,8 +41,10 @@ void BaseAllocator::TrackAllocation(AllocationDescriptor& p_address, uint64_t p_
    pageIt->m_allocations[p_address] = alloc;
 }
 
-void BaseAllocator::UntrackAllocation(void* p_address)
+void AllocatorTracker::UntrackAllocation(void* p_address)
 {
+   std::lock_guard<std::mutex> guard(m_memoryTrackingMutex);
+
    // Find the page where the allocation is placed
    auto pageIt = eastl::find_if(m_pages.begin(), m_pages.end(), [p_address](const Page& page) {
       if (p_address >= page.m_pageAddress)
@@ -107,8 +70,10 @@ void BaseAllocator::UntrackAllocation(void* p_address)
    pageIt->m_allocations.erase(allocation);
 }
 
-void BaseAllocator::AddPage(PageDescriptor p_pageDescriptor)
+void AllocatorTracker::AddPage(PageDescriptor p_pageDescriptor)
 {
+   // Check if it's a new page
+
    // Make sure that the page isn't allocated already
    Page page;
    page.m_pageAddress = (uint8_t*)p_pageDescriptor.m_pageAddress;
@@ -116,7 +81,7 @@ void BaseAllocator::AddPage(PageDescriptor p_pageDescriptor)
    m_pages.emplace_back(page);
 }
 
-void BaseAllocator::RemovePage(void* p_pageAddress)
+void AllocatorTracker::RemovePage(void* p_pageAddress)
 {
    auto pageIt = eastl::find_if(m_pages.begin(), m_pages.end(),
                                 [p_pageAddress](const Page& page) { return page.m_pageAddress == p_pageAddress; });
@@ -128,5 +93,5 @@ void BaseAllocator::RemovePage(void* p_pageAddress)
    // ms_pages.pop_back();
 }
 
-}; // namespace Memory
-}; // namespace Foundation
+} // namespace Memory
+} // namespace Foundation

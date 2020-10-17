@@ -6,6 +6,7 @@
 
 #include <Memory/BootstrapAllocator.h>
 #include <Memory/BaseSchema.h>
+#include <Memory/MemoryManagerInterface.h>
 #include <Memory/TlsfSchema.h>
 
 #include <Util/HashName.h>
@@ -15,58 +16,104 @@
 #include <EASTL/vector.h>
 #include <EASTL/algorithm.h>
 
+#include <Util/Assert.h>
+
 namespace Foundation
 {
 namespace Memory
 {
+template <typename t_key, typename t_value>
+using unordered_map =
+    eastl::unordered_map<t_key, t_value, eastl::hash<t_key>, eastl::equal_to<t_key>, BootstrapAllocator<TlsfSchema>, false>;
 
-class BaseAllocator
+template <typename t_value>
+using vector = eastl::vector<t_value, BootstrapAllocator<TlsfSchema>>;
+
+// A single tracked allocation within a page
+struct Allocation
 {
-   template <typename t_key, typename t_value>
-   using unordered_map =
-       eastl::unordered_map<t_key, t_value, eastl::hash<t_key>, eastl::equal_to<t_key>, BootstrapAllocator<TlsfSchema>, false>;
+   uint8_t* m_allocationAddress = nullptr;
+   uint64_t m_allocationSize = 0u;
+};
 
-   template <typename t_value>
-   using vector = eastl::vector<t_value, BootstrapAllocator<TlsfSchema>>;
+// A single tracked page
+struct Page
+{
+   uint8_t* m_pageAddress = nullptr;
+   uint64_t m_pageSize = 0u;
 
- public:
-   // A single tracked allocation within a page
-   struct Allocation
-   {
-      uint8_t* m_allocationAddress = nullptr;
-      uint64_t m_allocationSize = 0u;
-   };
+   unordered_map<void*, Allocation> m_allocations;
+};
 
-   // A single tracked page
-   struct Page
-   {
-      uint8_t* m_pageAddress = nullptr;
-      uint64_t m_pageSize = 0u;
-
-      unordered_map<void*, Allocation> m_allocations;
-   };
-
-   void* Allocate(uint64_t p_size);
-   void* AllocateAllign(uint64_t p_size, uint32_t p_alignment);
-   void Deallocate(void* p_address, uint64_t p_size);
-
-   void AddPage(PageDescriptor p_pageDescriptor);
-   void RemovePage(void* p_pageAddress);
-
+// Tracks allocation, and registers itsef
+class AllocatorTracker
+{
  protected:
-   BaseAllocator(HashName p_allocatorName, eastl::unique_ptr<BaseSchema> p_schema);
+   AllocatorTracker() = delete;
+   AllocatorTracker(HashName p_allocatorName);
 
+   // Track allocated allocations from the schema
    void TrackAllocation(AllocationDescriptor& p_address, uint64_t p_size);
+
+   // Untrack allocated allocations from the schema
    void UntrackAllocation(void* p_address);
 
-   uint32_t GetPageCount() const;
+   // Manges an added allocation
+   void AddPage(PageDescriptor p_pageDescriptor);
 
-   virtual AllocationDescriptor AllocateInternal(uint64_t p_size) = 0;
-   virtual AllocationDescriptor AllocateAlignInternal(uint64_t p_size, uint32_t p_alignment) = 0;
-   virtual void DeallocateInternal(void* p_pointer, uint64_t p_size) = 0;
+   // Manges a removed allocation
+   void RemovePage(void* p_pageAddress);
 
    vector<Page> m_pages;
-   eastl::unique_ptr<BaseSchema> m_schema = nullptr;
+   std::mutex m_memoryTrackingMutex;
+};
+
+//
+template <typename t_schema>
+class BaseAllocator : public AllocatorTracker
+{
+ public:
+   void* Allocate(uint64_t p_size)
+   {
+      AllocationDescriptor desc = AllocateInternal(p_size);
+      TrackAllocation(desc, p_size);
+      return desc.m_address;
+   }
+
+   void* AllocateAllign(uint64_t p_size, uint32_t p_alignment)
+   {
+      AllocationDescriptor desc = AllocateAlignInternal(p_size, p_alignment);
+      TrackAllocation(desc, p_size);
+      return desc.m_address;
+   }
+
+   void Deallocate(void* p_address, uint64_t p_size)
+   {
+      DeallocateInternal(p_address, p_size);
+      UntrackAllocation(p_address);
+   }
+
+ protected:
+   BaseAllocator(HashName p_allocatorName)
+   {
+      // Set the name
+      m_name = p_allocatorName;
+   }
+
+   uint32_t GetPageCount() const
+   {
+      return static_cast<uint32_t>(m_pages.size());
+   }
+
+ private:
+   // Allocator specific allocation
+   virtual AllocationDescriptor AllocateInternal(uint64_t p_size) = 0;
+   // Allocator specific aligned allocation
+   virtual AllocationDescriptor AllocateAlignInternal(uint64_t p_size, uint32_t p_alignment) = 0;
+   // Allocator specific deallocation
+   virtual void DeallocateInternal(void* p_pointer, uint64_t p_size) = 0;
+
+   t_schema m_schema;
    HashName m_name;
 };
 

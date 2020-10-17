@@ -38,27 +38,44 @@ struct AllocationDescriptor
    uint64_t m_size;
 };
 
-class BaseAllocator;
-
+template <uint32_t t_pageCount, uint32_t t_pageSize>
 class BaseSchema
 {
  public:
-   AllocationDescriptor Allocate(uint32_t p_size);
-   AllocationDescriptor AllocateAligned(uint32_t p_size, uint32_t p_alignment, uint32_t p_offset);
-   void Deallocate(void* p_address, uint32_t p_size);
+   BaseSchema() = default;
+
+   AllocationDescriptor Allocate(uint32_t p_size)
+   {
+      return AllocateInternal(p_size);
+   }
+
+   AllocationDescriptor AllocateAligned(uint32_t p_size, uint32_t p_alignment, uint32_t p_offset)
+   {
+      return AllocateAlignedInternal(p_size, p_alignment, p_offset);
+   }
+
+   void Deallocate(void* p_address, uint32_t p_size)
+   {
+      DeallocateInternal(p_address, p_size);
+   }
 
  protected:
-   BaseSchema(const SchemaDescriptor& desc, BaseAllocator* p_allocator);
-   const SchemaDescriptor& GetSchemaDescriptor() const;
+   // Get page count
+   constexpr SchemaDescriptor& GetPageCount() const
+   {
+      return m_pageCount;
+   }
+
+   // Get page size in bytes
+   constexpr SchemaDescriptor& GetPageSize() const
+   {
+      return m_pageSize;
+   }
 
  private:
    virtual AllocationDescriptor AllocateInternal(uint32_t p_size) = 0;
    virtual AllocationDescriptor AllocateAlignedInternal(uint32_t p_size, uint32_t p_alignment, uint32_t p_offset) = 0;
    virtual void DeallocateInternal(void* p_address, uint32_t p_size) = 0;
-
-   BaseAllocator* m_allocator = nullptr;
-
-   SchemaDescriptor m_descriptor;
 };
 
 }; // namespace Memory

@@ -19,7 +19,7 @@ namespace Foundation
 {
 namespace bstr
 {
-using string = eastl::basic_string<char, Memory::BootstrapAllocator<Memory::TlsfSchema>>;
+using string = eastl::basic_string<char, Memory::BootstrapAllocator<Memory::TlsfSchema<10, 10>>>;
 
 template <typename t_key, typename t_value>
 using unordered_map = eastl::unordered_map<t_key, t_value, eastl::hash<t_key>, eastl::equal_to<t_key>,
