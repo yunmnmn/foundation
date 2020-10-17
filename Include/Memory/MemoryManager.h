@@ -2,6 +2,7 @@
 
 #include <inttypes.h>
 #include <stdbool.h>
+#include <mutex>
 
 #include <EASTL/unordered_map.h>
 
@@ -25,6 +26,7 @@ class MemoryManager : public MemoryManagerInterface
    void UnregisterAllocator(HashName p_hashName) final;
 
    unordered_map<uint64_t, BaseAllocator*> m_allocators;
+   std::mutex m_registrationMutex;
 };
 
 }; // namespace Memory

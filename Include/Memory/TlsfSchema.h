@@ -3,6 +3,7 @@
 #include <inttypes.h>
 #include <stdbool.h>
 #include <memory.h>
+#include <mutex>
 
 #include <Memory/BaseSchema.h>
 
@@ -18,7 +19,7 @@ class BaseAllocator;
 class TlsfSchema : public BaseSchema
 {
  public:
-   static eastl::unique_ptr<BaseSchema> CreateSchema(const BaseSchema::Descriptor& p_desc, BaseAllocator* p_allocator);
+   static eastl::unique_ptr<BaseSchema> CreateSchema(const Descriptor& p_desc, BaseAllocator* p_allocator);
 
  private:
    TlsfSchema(const BaseSchema::Descriptor& p_desc, BaseAllocator* p_allocator);
@@ -35,6 +36,8 @@ class TlsfSchema : public BaseSchema
 
    BaseSchema::PageDescriptor m_pageDescriptors[1024] = {};
    uint32_t m_pageDescriptorIndex = 0u;
+
+   std::mutex m_tlsfMutex;
 };
 
 }; // namespace Memory

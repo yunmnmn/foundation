@@ -26,15 +26,18 @@ class BaseAllocator
    using unordered_map =
        eastl::unordered_map<t_key, t_value, eastl::hash<t_key>, eastl::equal_to<t_key>, BootstrapAllocator<TlsfSchema>, false>;
 
-   template <typename t_value> using vector = eastl::vector<t_value, BootstrapAllocator<TlsfSchema>>;
+   template <typename t_value>
+   using vector = eastl::vector<t_value, BootstrapAllocator<TlsfSchema>>;
 
  public:
+   // A single tracked allocation within a page
    struct Allocation
    {
       uint8_t* m_allocationAddress = nullptr;
       uint64_t m_allocationSize = 0u;
    };
 
+   // A single tracked page
    struct Page
    {
       uint8_t* m_pageAddress = nullptr;
@@ -47,19 +50,19 @@ class BaseAllocator
    void* AllocateAllign(uint64_t p_size, uint32_t p_alignment);
    void Deallocate(void* p_address, uint64_t p_size);
 
-   void AddPage(BaseSchema::PageDescriptor p_pageDescriptor);
+   void AddPage(PageDescriptor p_pageDescriptor);
    void RemovePage(void* p_pageAddress);
 
  protected:
    BaseAllocator(HashName p_allocatorName, eastl::unique_ptr<BaseSchema> p_schema);
 
-   void TrackAllocation(void* p_address, uint64_t p_size);
+   void TrackAllocation(AllocationDescriptor& p_address, uint64_t p_size);
    void UntrackAllocation(void* p_address);
 
    uint32_t GetPageCount() const;
 
-   virtual void* AllocateInternal(uint64_t p_size) = 0;
-   virtual void* AllocateAlignInternal(uint64_t p_size, uint32_t p_alignment) = 0;
+   virtual AllocationDescriptor AllocateInternal(uint64_t p_size) = 0;
+   virtual AllocationDescriptor AllocateAlignInternal(uint64_t p_size, uint32_t p_alignment) = 0;
    virtual void DeallocateInternal(void* p_pointer, uint64_t p_size) = 0;
 
    vector<Page> m_pages;

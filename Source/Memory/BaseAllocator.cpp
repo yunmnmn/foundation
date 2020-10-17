@@ -27,16 +27,16 @@ BaseAllocator::BaseAllocator(HashName p_allocatorName, eastl::unique_ptr<BaseSch
 
 void* BaseAllocator::Allocate(uint64_t p_size)
 {
-   void* address = AllocateInternal(p_size);
-   TrackAllocation(address, p_size);
-   return address;
+   AllocationDescriptor desc = AllocateInternal(p_size);
+   TrackAllocation(desc, p_size);
+   return desc.m_address;
 }
 
 void* BaseAllocator::AllocateAllign(uint64_t p_size, uint32_t p_alignment)
 {
-   void* address = AllocateAlignInternal(p_size, p_alignment);
-   TrackAllocation(address, p_size);
-   return address;
+   AllocationDescriptor desc = AllocateAlignInternal(p_size, p_alignment);
+   TrackAllocation(desc, p_size);
+   return desc.m_address;
 }
 
 void BaseAllocator::Deallocate(void* p_address, uint64_t p_size)
@@ -50,11 +50,13 @@ uint32_t BaseAllocator::GetPageCount() const
    return 0u;
 }
 
-void BaseAllocator::TrackAllocation(void* p_address, uint64_t p_size)
+void BaseAllocator::TrackAllocation(AllocationDescriptor& p_address, uint64_t p_size)
 {
+   // Check if it's a new page
+
    // Find the page where the allocation is placed
    auto pageIt = eastl::find_if(m_pages.begin(), m_pages.end(), [p_address](const Page& page) {
-      if (p_address >= page.m_pageAddress)
+      if (p_address.>= page.m_pageAddress)
       {
          if (p_address < page.m_pageAddress + page.m_pageSize)
          {
@@ -105,7 +107,7 @@ void BaseAllocator::UntrackAllocation(void* p_address)
    pageIt->m_allocations.erase(allocation);
 }
 
-void BaseAllocator::AddPage(BaseSchema::PageDescriptor p_pageDescriptor)
+void BaseAllocator::AddPage(PageDescriptor p_pageDescriptor)
 {
    // Make sure that the page isn't allocated already
    Page page;
