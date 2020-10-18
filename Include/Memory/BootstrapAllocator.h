@@ -10,31 +10,60 @@
 #include <Util/Util.h>
 
 #include <Memory/BaseSchema.h>
+#include <Memory/TlsfSchema.h>
 
 namespace Foundation
 {
 namespace Memory
 {
-// Unique allocator, memory allocated on this isn't tracked
-template <typename t_schema>
+// General BootstrapAllocator which is available before any code is executed. Memory isn't tracked
+// Uses the TlsfSchema
 class BootstrapAllocator
 {
-   using AllocationDataType = std::aligned_storage<sizeof(t_schema), std::alignment_of<t_schema>::value>::type;
+   using BootstrapSchema = TlsfSchema<1u, 4u * 1024 * 1000u>;
+
+   BootstrapAllocator() = delete;
 
  public:
-   BootstrapAllocator(const char* pName)
+   static void* Allocate(uint64_t p_size)
+   {
+      AllocationDescriptor desc = ms_schema.Allocate(p_size);
+      return desc.m_address;
+   }
+
+   static void* AllocateAllign(uint64_t p_size, uint32_t p_alignment)
+   {
+      AllocationDescriptor desc = ms_schema.AllocateAligned(p_size, p_alignment, 0u);
+      return desc.m_address;
+   }
+
+   static void Deallocate(void* p_address, uint64_t p_size)
+   {
+      ms_schema.Deallocate(p_address, p_size);
+   }
+
+ private:
+   static BootstrapSchema ms_schema;
+};
+BootstrapAllocator::BootstrapSchema BootstrapAllocator::ms_schema;
+
+// BootstrapAllocator for EASTL containers
+class EastlBootstrapAllocator
+{
+ public:
+   EastlBootstrapAllocator(const char* p_name)
    {
    }
 
-   BootstrapAllocator(const BootstrapAllocator& x)
+   EastlBootstrapAllocator(const EastlBootstrapAllocator& p_other)
    {
    }
 
-   BootstrapAllocator(const BootstrapAllocator& x, const char* pName)
+   EastlBootstrapAllocator(const EastlBootstrapAllocator& p_other, const char* p_name)
    {
    }
 
-   bool operator!=(const BootstrapAllocator& other)
+   bool operator!=(const EastlBootstrapAllocator& other)
    {
       // Only one bootstrap allocator, so always return true
       return true;
@@ -42,27 +71,19 @@ class BootstrapAllocator
 
    static void* allocate(size_t p_size, int32_t p_flag = 0)
    {
-      AllocationDescriptor desc = ms_schema.Allocate(p_size);
-      return desc.m_address;
+      BootstrapAllocator::Allocate(p_size);
    }
 
-   static void* allocate(size_t p_size, size_t p_alignment, size_t offset, int flags = 0)
+   static void* allocate(size_t p_size, size_t p_alignment, size_t p_offset, int p_flags = 0)
    {
-      AllocationDescriptor desc = ms_schema.AllocateAligned(p_size, p_alignment, offset);
-      return desc.m_address;
+      BootstrapAllocator::AllocateAllign(p_size, p_alignment);
    }
 
-   static void deallocate(void* p, size_t n)
+   static void deallocate(void* p_address, size_t p_size)
    {
-      ms_schema.Deallocate(p, n);
+      BootstrapAllocator::Deallocate(p_address, p_size);
    }
-
- private:
-   static t_schema ms_schema;
 };
-
-template <typename t_schema>
-t_schema BootstrapAllocator<t_schema>::ms_schema;
 
 }; // namespace Memory
 }; // namespace Foundation

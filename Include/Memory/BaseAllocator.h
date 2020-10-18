@@ -69,7 +69,7 @@ class AllocatorTracker
 };
 
 //
-template <typename t_schema>
+template <const char* t_name, typename t_schema>
 class BaseAllocator : public AllocatorTracker
 {
  public:
@@ -94,10 +94,9 @@ class BaseAllocator : public AllocatorTracker
    }
 
  protected:
-   BaseAllocator(HashName p_allocatorName)
+   BaseAllocator()
    {
-      // Set the name
-      m_name = p_allocatorName;
+      m_name = HashName(t_name);
    }
 
    uint32_t GetPageCount() const
@@ -115,6 +114,33 @@ class BaseAllocator : public AllocatorTracker
 
    t_schema m_schema;
    HashName m_name;
+};
+
+template <const char* t_name, typename t_schema>
+class DefaultAllocator : public BaseAllocator<t_name, t_schema>
+{
+   using BaseAllocatorType = BaseAllocator<t_schema>;
+
+ public:
+   AllocationDescriptor AllocateInternal(size_t p_size)
+   {
+      return m_schema.Allocate();
+   }
+
+   AllocationDescriptor AllocateAlignInternal(size_t p_size, size_t p_alignment, size_t offset, int flags = 0)
+   {
+      ms_schema.AllocateAligned(p_size, p_alignment, offset);
+   }
+
+   void DeallocateInternal(void* p, size_t n)
+   {
+      ms_schema.Deallocate(p, n);
+   }
+
+ private:
+   DefaultAllocator(HashName p_name) : BaseAllocator(p_name, eastl::move(t_schema::CreateSchema()))
+   {
+   }
 };
 
 }; // namespace Memory

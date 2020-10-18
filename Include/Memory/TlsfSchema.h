@@ -33,8 +33,8 @@ class TlsfSchema : public BaseSchema<t_pageCount, t_pageSize>
       m_tlsf = tlsf_create(memory);
    }
 
- private:
-   void* AllocateInternal(uint32_t p_size) final;
+ protected:
+   AllocationDescriptor AllocateInternal(uint32_t p_size) final
    {
       std::lock_guard<std::mutex> lock(m_tlsfMutex);
 
@@ -51,7 +51,7 @@ class TlsfSchema : public BaseSchema<t_pageCount, t_pageSize>
       return address;
    }
 
-   void* AllocateAlignedInternal(uint32_t p_size, uint32_t p_alignment, uint32_t p_offset) final;
+   AllocationDescriptor AllocateAlignedInternal(uint32_t p_size, uint32_t p_alignment, uint32_t p_offset) final
    {
       std::lock_guard<std::mutex> lock(m_tlsfMutex);
 
@@ -75,7 +75,8 @@ class TlsfSchema : public BaseSchema<t_pageCount, t_pageSize>
       tlsf_free(m_tlsf, p_address);
    }
 
-   BaseSchema::PageDescriptor AddPageInternal(uint32_t p_size) final
+ private:
+   BaseSchema::PageDescriptor AddPageInternal(uint32_t p_size)
    {
       // Calculate how many pages need to be allocated
       // const uint32_t pageCount = p_size / m_descriptor.m_pageSize + (p_size % m_descriptor.m_pageSize == 0 ? 0u : 1u);
@@ -96,10 +97,6 @@ class TlsfSchema : public BaseSchema<t_pageCount, t_pageSize>
       m_pageDescriptors[m_pageDescriptorIndex++] = pageDescriptor;
 
       return pageDescriptor;
-   }
-
-   void RemovePageInternal(BaseSchema::PageDescriptor& p_pageDescriptor) final
-   {
    }
 
    tlsf_t m_tlsf = nullptr;

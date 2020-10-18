@@ -63,13 +63,13 @@ class BaseSchema
    // Get page count
    constexpr SchemaDescriptor& GetPageCount() const
    {
-      return m_pageCount;
+      return t_pageCount;
    }
 
    // Get page size in bytes
    constexpr SchemaDescriptor& GetPageSize() const
    {
-      return m_pageSize;
+      return t_pageSize;
    }
 
  private:
