@@ -41,7 +41,7 @@ class TlsfSchema : public BaseSchema<t_pageCount, t_pageSize>
       void* address = tlsf_malloc(m_tlsf, p_size);
       if (!address)
       {
-         BaseSchema::PageDescriptor pageDescriptor = AddPage(p_size);
+         PageDescriptor pageDescriptor = AddPage(p_size);
          void* addedAddress = tlsf_malloc(m_tlsf, p_size);
          ASSERT(addedAddress, "Failed to alloate memory with the TLSF schema");
 
@@ -58,7 +58,7 @@ class TlsfSchema : public BaseSchema<t_pageCount, t_pageSize>
       void* address = tlsf_memalign(m_tlsf, p_alignment, p_size);
       if (!address)
       {
-         AddPage(p_size);
+         PageDescriptor pageDescriptor = AddPage(p_size);
          void* addedAddress = tlsf_memalign(m_tlsf, p_alignment, p_size);
          ASSERT(addedAddress, "Failed to alloate memory with the TLSF schema");
 
@@ -76,7 +76,7 @@ class TlsfSchema : public BaseSchema<t_pageCount, t_pageSize>
    }
 
  private:
-   BaseSchema::PageDescriptor AddPage(uint32_t p_size)
+   PageDescriptor AddPage(uint32_t p_size)
    {
       // Calculate how many pages need to be allocated
       // const uint32_t pageCount = p_size / m_descriptor.m_pageSize + (p_size % m_descriptor.m_pageSize == 0 ? 0u : 1u);
@@ -102,7 +102,7 @@ class TlsfSchema : public BaseSchema<t_pageCount, t_pageSize>
    tlsf_t m_tlsf = nullptr;
    uint32_t m_pageCount = 0u;
 
-   BaseSchema::PageDescriptor m_pageDescriptors[1024] = {};
+   PageDescriptor m_pageDescriptors[1024] = {};
    uint32_t m_pageDescriptorIndex = 0u;
 
    std::mutex m_tlsfMutex;

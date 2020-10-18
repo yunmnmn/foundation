@@ -7,7 +7,7 @@
 namespace Foundation
 {
 //-----------------------------------------------------------------------------
-bstr::unordered_map<uint64_t, bstr::string> HashName::ms_StringRegistry;
+unordered_map<uint64_t, string> HashName::ms_StringRegistry;
 std::mutex HashName::ms_hashNameMutex;
 bool HashName::ms_initialized = false;
 //-----------------------------------------------------------------------------
@@ -22,15 +22,14 @@ namespace Internal
 //-----------------------------------------------------------------------------
 HashName::HashName() : m_Hash(0u)
 {
-   CallOnce(ms_initialized, [&]() 
-   {
+   CallOnce(ms_initialized, [&]() {
       std::lock_guard<std::mutex> lock(ms_hashNameMutex);
-      bstr::string empty("test");
+      string empty("test");
       ms_StringRegistry[0] = empty;
    });
 }
 //-----------------------------------------------------------------------------
-HashName::HashName(const bstr::string& p_String) : m_Hash(0u)
+HashName::HashName(const string& p_String) : m_Hash(0u)
 {
    if (p_String.empty())
       return;
@@ -55,7 +54,7 @@ HashName::HashName(const bstr::string& p_String) : m_Hash(0u)
    }
 }
 //-----------------------------------------------------------------------------
-HashName::HashName(const char* p_string) : HashName(bstr::string(p_string))
+HashName::HashName(const char* p_string) : HashName(string(p_string))
 {
 }
 //-----------------------------------------------------------------------------

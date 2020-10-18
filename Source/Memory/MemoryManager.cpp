@@ -1,4 +1,5 @@
 #include <Memory/MemoryManager.h>
+#include <Memory/BaseAllocator.h>
 
 #include <Util/Assert.h>
 
@@ -6,7 +7,7 @@ namespace Foundation
 {
 namespace Memory
 {
-void MemoryManager::RegisterAllocator(HashName p_hashName, BaseAllocator* p_allocator)
+void MemoryManager::RegisterAllocator(HashName p_hashName, AllocatorTracker* p_allocator)
 {
    std::lock_guard<std::mutex> guard(m_registrationMutex);
 

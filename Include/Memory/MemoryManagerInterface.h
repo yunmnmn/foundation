@@ -10,12 +10,12 @@ namespace Foundation
 {
 namespace Memory
 {
-class AllocatorInterface;
+class AllocatorTracker;
 
 class MemoryManagerInterface : public Util::ManagerInterface<MemoryManagerInterface>
 {
  public:
-   virtual void RegisterAllocator(HashName p_hashName, BaseAllocator* allocator) = 0;
+   virtual void RegisterAllocator(HashName p_hashName, AllocatorTracker* allocator) = 0;
    virtual void UnregisterAllocator(HashName p_hashName) = 0;
 };
 

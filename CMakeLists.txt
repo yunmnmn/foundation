@@ -15,7 +15,13 @@ project(
       C
 )
 
-set(CMAKE_CXX_STANDARD 17)
+if (MSVC_VERSION GREATER_EQUAL "1900")
+    include(CheckCXXCompilerFlag)
+    CHECK_CXX_COMPILER_FLAG("/std:c++latest" _cpp_latest_flag_supported)
+    if (_cpp_latest_flag_supported)
+        add_compile_options("/std:c++latest")
+    endif()
+endif()
 
 add_subdirectory(Extern)
 
@@ -29,11 +35,7 @@ target_sources(
    PRIVATE 
       #include the cpp
       Source/Memory/BaseAllocator.cpp
-      Source/Memory/BaseSchema.cpp
-      Source/Memory/EastlAllocator.cpp
       Source/Memory/MemoryManager.cpp
-      Source/Memory/StaticEaStlAllocator.cpp
-      Source/Memory/TlsfSchema.cpp
       Source/Util/Assert.cpp
       Source/Util/Atomic.cpp
       Source/Util/HashName.cpp
@@ -46,11 +48,10 @@ target_sources(
       Include/Memory/BaseSchema.h
       Include/Memory/BootstrapAllocator.h
       Include/Memory/ClassAllocator.h
-      Include/Memory/EaStlAllocator.h
       Include/Memory/MemoryManager.h
       Include/Memory/MemoryManagerInterface.h
       Include/Memory/PoolSchema.h
-      Include/Memory/StaticEaStlAllocator.h
+      Include/Memory/StaticEastlAllocatorWrapper.h
       Include/Memory/StdAllocator.h
       Include/Memory/TlsfSchema.h
       Include/Util/Assert.h

@@ -11,7 +11,6 @@
 
 #include <Util/HashName.h>
 
-#include <EASTL/unique_ptr.h>
 #include <EASTL/unordered_map.h>
 #include <EASTL/vector.h>
 #include <EASTL/algorithm.h>
@@ -24,10 +23,10 @@ namespace Memory
 {
 template <typename t_key, typename t_value>
 using unordered_map =
-    eastl::unordered_map<t_key, t_value, eastl::hash<t_key>, eastl::equal_to<t_key>, BootstrapAllocator<TlsfSchema>, false>;
+    eastl::unordered_map<t_key, t_value, eastl::hash<t_key>, eastl::equal_to<t_key>, EastlBootstrapAllocator, false>;
 
 template <typename t_value>
-using vector = eastl::vector<t_value, BootstrapAllocator<TlsfSchema>>;
+using vector = eastl::vector<t_value, EastlBootstrapAllocator>;
 
 // A single tracked allocation within a page
 struct Allocation
@@ -48,6 +47,12 @@ struct Page
 // Tracks allocation, and registers itself
 class AllocatorTracker
 {
+ public:
+   uint32_t GetPageCount() const
+   {
+      return static_cast<uint32_t>(m_pages.size());
+   }
+
  protected:
    AllocatorTracker() = delete;
    AllocatorTracker(HashName p_allocatorName);
@@ -65,6 +70,7 @@ class AllocatorTracker
    void RemovePage(void* p_pageAddress);
 
    vector<Page> m_pages;
+
    std::mutex m_memoryTrackingMutex;
 };
 
@@ -93,16 +99,13 @@ class BaseAllocator : public AllocatorTracker
       UntrackAllocation(p_address);
    }
 
- protected:
-   BaseAllocator()
+   constexpr const char* GetAllocatorName() const
    {
-      m_name = HashName(t_name);
+      return t_name;
    }
 
-   uint32_t GetPageCount() const
-   {
-      return static_cast<uint32_t>(m_pages.size());
-   }
+ protected:
+   BaseAllocator() = default;
 
  private:
    // Allocator specific allocation
@@ -113,13 +116,12 @@ class BaseAllocator : public AllocatorTracker
    virtual void DeallocateInternal(void* p_pointer, uint64_t p_size) = 0;
 
    t_schema m_schema;
-   HashName m_name;
 };
 
 template <const char* t_name, typename t_schema>
 class DefaultAllocator : public BaseAllocator<t_name, t_schema>
 {
-   using BaseAllocatorType = BaseAllocator<t_schema>;
+   using BaseAllocatorType = BaseAllocator<t_name, t_schema>;
 
  public:
    DefaultAllocator() = default;
