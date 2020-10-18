@@ -3,13 +3,12 @@
 #include <inttypes.h>
 #include <stdbool.h>
 #include <atomic>
+#include <mutex>
 
 #include <Util/Assert.h>
 #include <Util/Macro.h>
 
 #include <Memory/BaseSchema.h>
-
-#include <Parallel/SpinLock.h>
 
 #include <EASTL/unique_ptr.h>
 #include <EASTL/tuple.h>
@@ -18,10 +17,8 @@ namespace Foundation
 {
 namespace Memory
 {
-class BaseAllocator;
-
 template <typename t_elementType, size_t t_pageCount, size_t t_pageElementCount>
-class PoolSchema : public BaseSchema
+class PoolSchema : public BaseSchema<t_pageCount, sizeof(t_elementType) * t_pageElementCount>
 {
    class Page
    {
@@ -126,29 +123,18 @@ class PoolSchema : public BaseSchema
    using PoolSchemaType = PoolSchema<t_elementType, t_pageCount, t_pageElementCount>;
 
  public:
-   static eastl::unique_ptr<BaseSchema> CreateSchema(const BaseSchema::Descriptor& p_desc, BaseAllocator* p_allocator)
-   {
-      // NOTE: Ignore the descriptor, create one from the templated arguments
-      BaseSchema::Descriptor descriptor = {.m_maxPageCount = t_m_maxPageCount,
-                                           .m_pageSize = sizeof(t_elementType) * t_pageElementCount};
-      return eastl::unique_ptr<BaseSchema>(new PoolSchemaType(descriptor, p_allocator));
-   }
-
+   PoolSchema() = default;
    ~PoolSchema()
    {
       // TODO: delete all the pages
    }
 
  private:
-   PoolSchema(const BaseSchema::Descriptor& p_desc, BaseAllocator* p_allocator) : BaseSchema(p_desc, p_allocator)
-   {
-   }
-
-   void* AllocateInternal(uint32_t p_size) final
+   AllocationDescriptor AllocateInternal(uint32_t p_size) final
    {
       ASSERT(p_size < sizeof(t_elementType), "The requested size is larger than the element type");
 
-      LockScopeGuard<SpinLock> spinLock;
+      std::lock_guard<std::mutex> guard(m_schameMutex);
 
       const auto allocateFromPages = [m_pages]() -> void* {
          // Find a page with a free element
@@ -168,7 +154,7 @@ class PoolSchema : public BaseSchema
                   // Finally return the address if it's valid
                   if (objectAddress != nullptr)
                   {
-                     return objectAddress;
+                     return PageDescriptor{.m_address = objectAddress};
                   }
                }
             }
@@ -179,32 +165,34 @@ class PoolSchema : public BaseSchema
       };
 
       // Allocate from the pages
-      void* allocatedMemory = allocateFromPages();
+      AllocationDescriptor allocationDescriptor = {.m_address = allocateFromPages()};
 
       // Failed to allocate
-      if (!allocatedMemory)
+      if (!pageDescriptor.m_address)
       {
          // No free elements available, allocate a new page
-         AddPage(sizeof(Page));
+         PageDescriptor pageDescriptor = AddPage(sizeof(Page));
          // Try again when a page is added
-         allocatedMemory = allocateFromPages();
+
+         pageDescriptor = AllocationDescriptor{
+             .m_address = allocateFromPages(), .m_size = p_size, .m_pageAddress = pageDescriptor.m_pageAddress};
       }
 
-      ASSERT(allocatedMemory != nullptr, "Failed to allocate memory");
-      return allocatedMemory;
+      ASSERT(allocationDescriptor.m_address != nullptr, "Failed to allocate memory");
+      return pageDescriptor;
    }
 
-   void* PoolSchema::AllocateAlignedInternal(uint32_t p_size, uint32_t p_alignment, uint32_t p_offset)
+   AllocationDescriptor PoolSchema::AllocateAlignedInternal(uint32_t p_size, uint32_t p_alignment, uint32_t p_offset)
    {
-      LockScopeGuard<SpinLock> spinLock;
+      std::lock_guard<std::mutex> guard(m_schameMutex);
 
       ASSERT(false, "Not possible to allocate aligned with the PoolSchema");
-      return nullptr;
+      return AllocationDescriptor{};
    }
 
    void DeallocateInternal(void* p_address, uint32_t p_size) final
    {
-      LockScopeGuard<SpinLock> spinLock;
+      std::lock_guard<std::mutex> guard(m_schameMutex);
 
       Page* currentPage = m_pages;
       Page* previousPage = nullptr;
@@ -278,8 +266,9 @@ class PoolSchema : public BaseSchema
 
  private:
    Page* m_pages = nullptr;
-
    uint32_t m_pageCount = 0u;
+
+   std::mutex m_schameMutex;
 };
 }; // namespace Memory
 }; // namespace Foundation

@@ -45,7 +45,7 @@ struct Page
    unordered_map<void*, Allocation> m_allocations;
 };
 
-// Tracks allocation, and registers itsef
+// Tracks allocation, and registers itself
 class AllocatorTracker
 {
  protected:
@@ -122,24 +122,21 @@ class DefaultAllocator : public BaseAllocator<t_name, t_schema>
    using BaseAllocatorType = BaseAllocator<t_schema>;
 
  public:
+   DefaultAllocator() = default;
+
    AllocationDescriptor AllocateInternal(size_t p_size)
    {
       return m_schema.Allocate();
    }
 
-   AllocationDescriptor AllocateAlignInternal(size_t p_size, size_t p_alignment, size_t offset, int flags = 0)
+   AllocationDescriptor AllocateAlignInternal(size_t p_size, size_t p_alignment, size_t p_offset, int p_flags = 0)
    {
-      ms_schema.AllocateAligned(p_size, p_alignment, offset);
+      ms_schema.AllocateAligned(p_size, p_alignment, p_offset);
    }
 
    void DeallocateInternal(void* p, size_t n)
    {
       ms_schema.Deallocate(p, n);
-   }
-
- private:
-   DefaultAllocator(HashName p_name) : BaseAllocator(p_name, eastl::move(t_schema::CreateSchema()))
-   {
    }
 };
 

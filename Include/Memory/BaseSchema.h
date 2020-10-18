@@ -28,14 +28,14 @@ struct PageDescriptor
 
 struct AllocationDescriptor
 {
-   // Starting address of the page where the allocation is
-   void* m_pageAddress = nullptr;
-
    // Address where the memory is allocated
    void* m_address = nullptr;
 
    // Allocation size
    uint64_t m_size;
+
+   // Starting address of the page where the allocation is
+   void* m_pageAddress = nullptr;
 };
 
 template <uint32_t t_pageCount, uint32_t t_pageSize>

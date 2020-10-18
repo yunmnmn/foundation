@@ -6,23 +6,26 @@
 #include <Util/Assert.h>
 #include <Util/Macro.h>
 
-#include <Parallel/SpinLock.h>
-
 #include <Memory/BaseAllocator.h>
 #include <Memory/BaseSchema.h>
 
-#include <EASTL/unique_ptr.h>
+#include <Memory/PoolSchema.h>
 
-#define CLASS_ALLOCATOR(t_class)                                                                                                   \
+#define CLASS_ALLOCATOR_PAGECOUNT_PAGESIZE(CLASS, PAGECOUNT, PAGESIZE)                                                             \
    inline void* operator new(std::size_t p_size)                                                                                   \
    {                                                                                                                               \
-      return Foundation::Memory::StaticClassAllocator<t_class, t_schema>::Get().Allocate(size, #t_class);                          \
+      using ClassSchema = Foundation::Memory::PoolSchema<CLASS, PAGECOUNT, PAGESIZE>;                                              \
+      using ClassAllocator = Foundation::Memory::StaticAllocatorWrapper<DefaultAllocator<#CLASS, ClassSchema>>;                    \
+      return ClassAllocator::Allocate(p_size);                                                                                     \
    }                                                                                                                               \
    inline void operator delete(void* p_address, std::size_t p_size)                                                                \
    {                                                                                                                               \
+      using ClassSchema = Foundation::Memory::PoolSchema<CLASS, PAGECOUNT, PAGESIZE>;                                              \
+      using ClassAllocator = Foundation::Memory::StaticAllocatorWrapper<DefaultAllocator<#CLASS, ClassSchema>>;                    \
+      return ClassAllocator::Allocate(p_size);                                                                                     \
       if (p_address)                                                                                                               \
       {                                                                                                                            \
-         return Foundation::Memory::StaticClassAllocator<t_class, t_schema>::Get().Deallocate(p_address, p_size);                  \
+         ClassAllocator::Deallocate(p_address, p_size);                                                                            \
       }                                                                                                                            \
    }
 
@@ -36,19 +39,19 @@ class StaticAllocatorWrapper
    using AllocatorDataType = typename std::aligned_storage<sizeof(t_allocator), std::alignof(t_allocator)>::type;
 
  public:
-   static void* allocate(size_t p_size, int32_t p_flag = 0)
+   static void* Allocate(size_t p_size)
    {
       initializeAllocator(p_name);
       return ms_allocator->Allocate(p_size);
    }
 
-   static void* allocate(size_t p_size, size_t p_alignment, size_t p_offset, int p_flags = 0)
+   static void* AllocateAllign(size_t p_size, size_t p_alignment)
    {
       initializeAllocator(p_name);
       return ms_allocator->AllocateAllign(p_size, p_alignment);
    }
 
-   static void deallocate(void* p_address, size_t p_size)
+   static void Deallocate(void* p_address, size_t p_size)
    {
       ASSERT(ms_allocator.get() != nullptr, "Allocator isn't initalized yet");
       ms_allocator->Deallocate(p_address);
@@ -63,16 +66,17 @@ class StaticAllocatorWrapper
                []() { ms_allocator = eastl::move(StaticAllocatorWrapper<t_class, t_schema>::CreateAllocator(p_name)); });
    }
 
-   static eastl::unique_ptr<t_allocator> ms_allocator;
-   static bool ms_initializedFlag;
+   static t_allocator* ms_allocator;
    static StaticAllocatorWrapper ms_allocatorData = {};
+
+   static bool ms_initializedFlag;
 };
 template <typename t_allocator>
-eastl::unique_ptr<t_allocator> StaticAllocatorWrapper<t_allocator>::ms_allocator;
-template <typename t_allocator>
-bool StaticAllocatorWrapper<t_allocator>::ms_initializedFlag = false;
+t_allocator* StaticAllocatorWrapper<t_allocator>::ms_allocator;
 template <typename t_allocator>
 StaticAllocatorWrapper<t_allocator>::AllocatorDataType StaticAllocatorWrapper<t_allocator>::ms_allocatorData;
+template <typename t_allocator>
+bool StaticAllocatorWrapper<t_allocator>::ms_initializedFlag = false;
 
 template <typename t_allocator>
 class EastlAllocatorWrapper
@@ -166,16 +170,17 @@ class StaticEastlAllocatorWrapper
                []() { ms_allocator = eastl::move(StaticEastlAllocatorWrapper<t_class, t_schema>::CreateAllocator(p_name)); });
    }
 
-   static eastl::unique_ptr<t_allocator> ms_allocator;
-   static bool ms_initializedFlag;
+   static t_allocator* ms_allocator;
    static StaticAllocatorWrapper ms_allocatorData = {};
+
+   static bool ms_initializedFlag;
 };
 template <typename t_allocator>
-eastl::unique_ptr<t_allocator> StaticEastlAllocatorWrapper<t_allocator>::ms_allocator;
-template <typename t_allocator>
-bool StaticEastlAllocatorWrapper<t_allocator>::ms_initializedFlag = false;
+t_allocator* StaticEastlAllocatorWrapper<t_allocator>::ms_allocator;
 template <typename t_allocator>
 StaticEastlAllocatorWrapper<t_allocator>::AllocatorDataType StaticEastlAllocatorWrapper<t_allocator>::ms_allocatorData;
+template <typename t_allocator>
+bool StaticEastlAllocatorWrapper<t_allocator>::ms_initializedFlag = false;
 
 }; // namespace Memory
 }; // namespace Foundation

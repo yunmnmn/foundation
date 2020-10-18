@@ -27,15 +27,13 @@ PlatformSource(platformSource)
 target_sources(
    Foundation 
    PRIVATE 
-      Source/Container/ContainerTypes.cpp
-      Source/FileSystem/FileSystem.cpp
+      #include the cpp
       Source/Memory/BaseAllocator.cpp
       Source/Memory/BaseSchema.cpp
       Source/Memory/EastlAllocator.cpp
       Source/Memory/MemoryManager.cpp
       Source/Memory/StaticEaStlAllocator.cpp
       Source/Memory/TlsfSchema.cpp
-      Source/Parallel/SpinLock.cpp
       Source/Util/Assert.cpp
       Source/Util/Atomic.cpp
       Source/Util/HashName.cpp
@@ -43,6 +41,26 @@ target_sources(
       Source/Util/MurmurHash3.cpp
       # Include the platform specific files
       ${platformSource}
+      # Include the headers
+      Include/Memory/BaseAllocator.h
+      Include/Memory/BaseSchema.h
+      Include/Memory/BootstrapAllocator.h
+      Include/Memory/ClassAllocator.h
+      Include/Memory/EaStlAllocator.h
+      Include/Memory/MemoryManager.h
+      Include/Memory/MemoryManagerInterface.h
+      Include/Memory/PoolSchema.h
+      Include/Memory/StaticEaStlAllocator.h
+      Include/Memory/StdAllocator.h
+      Include/Memory/TlsfSchema.h
+      Include/Util/Assert.h
+      Include/Util/Atomic.h
+      Include/Util/HashName.h
+      Include/Util/Logger.h
+      Include/Util/Macro.h
+      Include/Util/ManagerInterface.h
+      Include/Util/MurmurHash3.h
+      Include/Util/Util.h
 )
 
 # Get the platform specific includes
