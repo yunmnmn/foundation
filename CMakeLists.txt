@@ -36,6 +36,7 @@ target_sources(
       #include the cpp
       Source/Memory/BaseAllocator.cpp
       Source/Memory/MemoryManager.cpp
+      Source/Memory/BootstrapAllocator.cpp
       Source/Util/Assert.cpp
       Source/Util/Atomic.cpp
       Source/Util/HashName.cpp
@@ -86,6 +87,6 @@ target_link_libraries(
    Foundation
    PUBLIC
       EASTL
-   PRIVATE
       tlsf
+   PRIVATE
 )

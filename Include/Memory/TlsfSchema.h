@@ -8,8 +8,6 @@
 #include <Memory/BaseSchema.h>
 #include <Util/Assert.h>
 
-#include <EASTL/unique_ptr.h>
-
 #include <tlsf.h>
 
 namespace Foundation
@@ -22,11 +20,6 @@ class TlsfSchema : public BaseSchema<t_pageCount, t_pageSize>
    using TlsfSchemaType = TlsfSchema<t_pageCount, t_pageSize>;
 
  public:
-   static eastl::unique_ptr<TlsfSchema> CreateSchema()
-   {
-      return eastl::unique_ptr<TlsfSchema>(new TlsfSchemaType());
-   }
-
    TlsfSchema()
    {
       void* memory = malloc(tlsf_size());

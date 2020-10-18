@@ -43,9 +43,10 @@ struct HashName
    const uint64_t Hash() const;
 
  private:
+   // Lazily creates a string registry
+   static unordered_map<uint64_t, string>& GetStringRegistery();
    uint64_t m_Hash = 0u;
 
-   static unordered_map<uint64_t, string> ms_StringRegistry;
    static std::mutex ms_hashNameMutex;
    static bool ms_initialized;
 };

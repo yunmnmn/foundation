@@ -6,29 +6,19 @@
 
 namespace Foundation
 {
-//-----------------------------------------------------------------------------
-unordered_map<uint64_t, string> HashName::ms_StringRegistry;
+// Define the static members here
 std::mutex HashName::ms_hashNameMutex;
 bool HashName::ms_initialized = false;
-//-----------------------------------------------------------------------------
-namespace
-{
-namespace Internal
-{
-}; // namespace Internal
-}; // namespace
-//-----------------------------------------------------------------------------
-// HashName
-//-----------------------------------------------------------------------------
+
 HashName::HashName() : m_Hash(0u)
 {
    CallOnce(ms_initialized, [&]() {
       std::lock_guard<std::mutex> lock(ms_hashNameMutex);
       string empty("test");
-      ms_StringRegistry[0] = empty;
+      GetStringRegistery()[0] = empty;
    });
 }
-//-----------------------------------------------------------------------------
+
 HashName::HashName(const string& p_String) : m_Hash(0u)
 {
    if (p_String.empty())
@@ -50,30 +40,35 @@ HashName::HashName(const string& p_String) : m_Hash(0u)
 
    {
       std::lock_guard<std::mutex> lock(ms_hashNameMutex);
-      ms_StringRegistry[m_Hash] = p_String;
+      GetStringRegistery()[m_Hash] = p_String;
    }
 }
-//-----------------------------------------------------------------------------
+
 HashName::HashName(const char* p_string) : HashName(string(p_string))
 {
 }
-//-----------------------------------------------------------------------------
+
 bool HashName::operator==(const HashName& p_Rhs)
 {
    return m_Hash == p_Rhs.m_Hash;
 }
-//-----------------------------------------------------------------------------
+
 const char* HashName::GetCStr() const
 {
-   const auto& it = ms_StringRegistry.find(m_Hash);
-   ASSERT(it != ms_StringRegistry.end(), "String is not set in hash map");
+   const auto& it = GetStringRegistery().find(m_Hash);
+   ASSERT(it != GetStringRegistery().end(), "String is not set in hash map");
 
    return it->second.c_str();
 }
-//-----------------------------------------------------------------------------
+
 const uint64_t HashName::Hash() const
 {
    return m_Hash;
 }
-//-----------------------------------------------------------------------------
+
+unordered_map<uint64_t, string>& Foundation::HashName::GetStringRegistery()
+{
+   static unordered_map<uint64_t, string> stringRegistry;
+   return stringRegistry;
+}
 }; // namespace Foundation

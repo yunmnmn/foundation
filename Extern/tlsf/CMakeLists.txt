@@ -10,6 +10,7 @@ target_sources(
    tlsf
    PRIVATE
       ${TLSF_VERSION}/tlsf.c
+      ${TLSF_VERSION}/tlsf.h
 )
 
 target_include_directories(

@@ -45,7 +45,6 @@ class BootstrapAllocator
  private:
    static BootstrapSchema ms_schema;
 };
-BootstrapAllocator::BootstrapSchema BootstrapAllocator::ms_schema;
 
 // BootstrapAllocator for EASTL containers
 class EastlBootstrapAllocator
