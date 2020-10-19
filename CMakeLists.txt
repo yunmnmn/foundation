@@ -53,6 +53,8 @@ target_sources(
       Include/Memory/MemoryManagerInterface.h
       Include/Memory/PoolSchema.h
       Include/Memory/StaticEastlAllocatorWrapper.h
+      Include/Memory/EastlAllocatorWrapper.h
+      Include/Memory/StaticAllocatorWrapper.h
       Include/Memory/StdAllocator.h
       Include/Memory/TlsfSchema.h
       Include/Util/Assert.h

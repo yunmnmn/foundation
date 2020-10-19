@@ -14,7 +14,7 @@ namespace Foundation
 {
 namespace Memory
 {
-template <uint32_t t_pageCount, uint32_t t_pageSize>
+template <uint32_t t_pageCount, uint64_t t_pageSize>
 class TlsfSchema : public BaseSchema<t_pageCount, t_pageSize>
 {
    using TlsfSchemaType = TlsfSchema<t_pageCount, t_pageSize>;
@@ -27,7 +27,7 @@ class TlsfSchema : public BaseSchema<t_pageCount, t_pageSize>
    }
 
  protected:
-   AllocationDescriptor AllocateInternal(uint32_t p_size) final
+   AllocationDescriptor AllocateInternal(uint64_t p_size) final
    {
       std::lock_guard<std::mutex> lock(m_tlsfMutex);
 
@@ -44,7 +44,7 @@ class TlsfSchema : public BaseSchema<t_pageCount, t_pageSize>
       return AllocationDescriptor{.m_address = address, .m_size = p_size};
    }
 
-   AllocationDescriptor AllocateAlignedInternal(uint32_t p_size, uint32_t p_alignment, uint32_t p_offset) final
+   AllocationDescriptor AllocateAlignedInternal(uint64_t p_size, uint32_t p_alignment, uint64_t p_offset) final
    {
       std::lock_guard<std::mutex> lock(m_tlsfMutex);
 
@@ -61,7 +61,7 @@ class TlsfSchema : public BaseSchema<t_pageCount, t_pageSize>
       return AllocationDescriptor{.m_address = address, .m_size = p_size};
    }
 
-   void DeallocateInternal(void* p_address, uint32_t p_size) final
+   void DeallocateInternal(void* p_address, uint64_t p_size) final
    {
       std::lock_guard<std::mutex> lock(m_tlsfMutex);
 
@@ -69,15 +69,15 @@ class TlsfSchema : public BaseSchema<t_pageCount, t_pageSize>
    }
 
  private:
-   PageDescriptor AddPage(uint32_t p_size)
+   PageDescriptor AddPage(uint64_t p_size)
    {
       // Calculate how many pages need to be allocated
       // const uint32_t pageCount = p_size / m_descriptor.m_pageSize + (p_size % m_descriptor.m_pageSize == 0 ? 0u : 1u);
-      const uint32_t pageCount = p_size / t_pageSize + (p_size % t_pageSize == 0 ? 0u : 1u);
+      const uint32_t pageCount = static_cast<uint32_t>(p_size / t_pageSize + (p_size % t_pageSize == 0u ? 0u : 1u));
       ASSERT(m_pageCount + pageCount <= t_pageCount, "New poolcount will exceed the limit.");
 
       // Calculate the pool size in bytes
-      const uint32_t pageSize = pageCount * t_pageSize;
+      const uint64_t pageSize = pageCount * t_pageSize;
 
       // Allocate enough memory for the TlsfPool and a LinkedPool
       uint8_t* pageAddress = (uint8_t*)malloc(pageSize);

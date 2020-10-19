@@ -54,7 +54,8 @@ class AllocatorTracker
    }
 
  protected:
-   AllocatorTracker() = delete;
+   AllocatorTracker() = default;
+   // TODO change this
    AllocatorTracker(HashName p_allocatorName);
 
    // Track allocated allocations from the schema
@@ -79,6 +80,8 @@ template <const char* t_name, typename t_schema>
 class BaseAllocator : public AllocatorTracker
 {
  public:
+   BaseAllocator() = default;
+
    void* Allocate(uint64_t p_size)
    {
       AllocationDescriptor desc = AllocateInternal(p_size);
@@ -99,13 +102,13 @@ class BaseAllocator : public AllocatorTracker
       UntrackAllocation(p_address);
    }
 
-   constexpr const char* GetAllocatorName() const
+   constexpr const char* const GetAllocatorName() const
    {
       return t_name;
    }
 
  protected:
-   BaseAllocator() = default;
+   t_schema m_schema;
 
  private:
    // Allocator specific allocation
@@ -114,8 +117,6 @@ class BaseAllocator : public AllocatorTracker
    virtual AllocationDescriptor AllocateAlignInternal(uint64_t p_size, uint32_t p_alignment) = 0;
    // Allocator specific deallocation
    virtual void DeallocateInternal(void* p_pointer, uint64_t p_size) = 0;
-
-   t_schema m_schema;
 };
 
 template <const char* t_name, typename t_schema>
@@ -126,19 +127,20 @@ class DefaultAllocator : public BaseAllocator<t_name, t_schema>
  public:
    DefaultAllocator() = default;
 
-   AllocationDescriptor AllocateInternal(size_t p_size)
+   AllocationDescriptor AllocateInternal(uint64_t p_size) final
    {
-      return m_schema.Allocate();
+      return m_schema.Allocate(p_size);
    }
 
-   AllocationDescriptor AllocateAlignInternal(size_t p_size, size_t p_alignment, size_t p_offset, int p_flags = 0)
+   AllocationDescriptor AllocateAlignInternal(uint64_t p_size, uint32_t p_alignment) final
    {
-      ms_schema.AllocateAligned(p_size, p_alignment, p_offset);
+      // TODO: 0u, huh?
+      return m_schema.AllocateAligned(p_size, p_alignment, 0u);
    }
 
-   void DeallocateInternal(void* p, size_t n)
+   void DeallocateInternal(void* p_address, uint64_t p_size) final
    {
-      ms_schema.Deallocate(p, n);
+      m_schema.Deallocate(p_address, p_size);
    }
 };
 

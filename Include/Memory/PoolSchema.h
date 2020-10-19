@@ -22,10 +22,12 @@ class PoolSchema : public BaseSchema<t_pageCount, sizeof(t_elementType) * t_page
 {
    class Page
    {
+      static constexpr uint32_t InvalidElementIndex = static_cast<uint32_t>(-1);
+
     public:
       void* GetMemoryAddress(uint32_t p_index)
       {
-         t_elementType* freeObject = &currentPage->m_objects[p_index];
+         t_elementType* freeObject = &m_objects[p_index];
          return static_cast<void*>(freeObject);
       }
 
@@ -51,6 +53,8 @@ class PoolSchema : public BaseSchema<t_pageCount, sizeof(t_elementType) * t_page
 
          // Increment the element count
          m_elementCount++;
+
+         return objectAddress;
       }
 
       // Allocate an element that hasn't been used yet
@@ -61,7 +65,7 @@ class PoolSchema : public BaseSchema<t_pageCount, sizeof(t_elementType) * t_page
             // increment the element index
             const uint32_t index = m_elementIndex++;
 
-            objectAddress = currentPage->GetMemoryAddress(index);
+            void* objectAddress = GetMemoryAddress(index);
 
             // Increment the total amount of allocated elements
             m_elementCount++;
@@ -74,11 +78,14 @@ class PoolSchema : public BaseSchema<t_pageCount, sizeof(t_elementType) * t_page
 
       inline bool FreeElement(uint32_t p_index)
       {
-         ASSERT(m_nextIndex[p_index] == InvalidElementIndex, "This index should be invalid");
+         // TODO
+         // ASSERT(m_nextIndex[p_index] == InvalidElementIndex, "This index should be invalid");
 
          m_nextIndex[p_index] = m_freeElementIndex;
          m_freeElementIndex = p_index;
          m_elementCount--;
+
+         return false;
       }
 
       // Checks if the page is already full
@@ -95,11 +102,15 @@ class PoolSchema : public BaseSchema<t_pageCount, sizeof(t_elementType) * t_page
       // TODO: make this a constexpr
       auto GetAllocatedMemoryRange()
       {
-         const uint64_t start = static_cast<uint64_t>(&m_objects[0u]);
-         const uint64_t end = static_cast<uint64_t>(&m_objects[t_pageElementCount - 1u]);
+         // TODO: dangerous
+         const uint64_t start = reinterpret_cast<uint64_t>(&m_objects[0u]);
+         const uint64_t end = reinterpret_cast<uint64_t>(&m_objects[t_pageElementCount - 1u]);
          ASSERT(end > start, "The allocated page range isn't correct");
-         return eastl::make_tuple<uint64_t, uint64_t>(start, end);
+         return eastl::make_tuple(start, end);
       }
+
+      // Pointer to next page
+      Page* m_next = nullptr;
 
     private:
       // Array of objects
@@ -113,12 +124,7 @@ class PoolSchema : public BaseSchema<t_pageCount, sizeof(t_elementType) * t_page
       uint32_t m_elementCount = 0u;
       // The first free index
       uint32_t m_freeElementIndex = InvalidElementIndex;
-
-      // Pointer to next page
-      Page* m_next = nullptr;
    };
-
-   const uint32_t InvalidElementIndex = static_cast<uint32_t>(-1);
 
    using PoolSchemaType = PoolSchema<t_elementType, t_pageCount, t_pageElementCount>;
 
@@ -130,13 +136,12 @@ class PoolSchema : public BaseSchema<t_pageCount, sizeof(t_elementType) * t_page
    }
 
  private:
-   AllocationDescriptor AllocateInternal(uint32_t p_size) final
+   AllocationDescriptor AllocateInternal(uint64_t p_size) final
    {
       ASSERT(p_size < sizeof(t_elementType), "The requested size is larger than the element type");
-
       std::lock_guard<std::mutex> guard(m_schameMutex);
 
-      const auto allocateFromPages = [m_pages]() -> void* {
+      const auto allocateFromPages = [this]() -> void* {
          // Find a page with a free element
          Page* currentPage = m_pages;
          while (currentPage)
@@ -145,16 +150,16 @@ class PoolSchema : public BaseSchema<t_pageCount, sizeof(t_elementType) * t_page
             if (currentPage->IsFull())
             {
                // Check if there is a free element to re-use, use that
-               void* objectAddress = GetReusedElement();
+               void* objectAddress = m_pages->GetReusedElement();
                if (objectAddress == nullptr)
                {
                   // Allocate a new element
-                  objectAddress = AllocateElement();
+                  objectAddress = m_pages->AllocateElement();
 
                   // Finally return the address if it's valid
                   if (objectAddress != nullptr)
                   {
-                     return PageDescriptor{.m_address = objectAddress};
+                     return objectAddress;
                   }
                }
             }
@@ -162,27 +167,30 @@ class PoolSchema : public BaseSchema<t_pageCount, sizeof(t_elementType) * t_page
             // Keep iterating
             currentPage = currentPage->m_next;
          }
+
+         // TODO: not sure
+         return nullptr;
       };
 
       // Allocate from the pages
       AllocationDescriptor allocationDescriptor = {.m_address = allocateFromPages()};
 
       // Failed to allocate
-      if (!pageDescriptor.m_address)
+      if (!allocationDescriptor.m_address)
       {
          // No free elements available, allocate a new page
          PageDescriptor pageDescriptor = AddPage(sizeof(Page));
          // Try again when a page is added
 
-         pageDescriptor = AllocationDescriptor{
+         allocationDescriptor = AllocationDescriptor{
              .m_address = allocateFromPages(), .m_size = p_size, .m_pageAddress = pageDescriptor.m_pageAddress};
       }
 
       ASSERT(allocationDescriptor.m_address != nullptr, "Failed to allocate memory");
-      return pageDescriptor;
+      return allocationDescriptor;
    }
 
-   AllocationDescriptor PoolSchema::AllocateAlignedInternal(uint32_t p_size, uint32_t p_alignment, uint32_t p_offset)
+   AllocationDescriptor PoolSchema::AllocateAlignedInternal(uint64_t p_size, uint32_t p_alignment, uint64_t p_offset) final
    {
       std::lock_guard<std::mutex> guard(m_schameMutex);
 
@@ -190,7 +198,7 @@ class PoolSchema : public BaseSchema<t_pageCount, sizeof(t_elementType) * t_page
       return AllocationDescriptor{};
    }
 
-   void DeallocateInternal(void* p_address, uint32_t p_size) final
+   void DeallocateInternal(void* p_address, uint64_t p_size) final
    {
       std::lock_guard<std::mutex> guard(m_schameMutex);
 
@@ -198,7 +206,8 @@ class PoolSchema : public BaseSchema<t_pageCount, sizeof(t_elementType) * t_page
       Page* previousPage = nullptr;
       while (currentPage)
       {
-         const uint64_t address = static_cast<uint64_t>(p_address);
+         // TODO: dangerous
+         const uint64_t address = reinterpret_cast<uint64_t>(p_address);
 
          // Get the starting and ending address
          auto [start, end] = currentPage->GetAllocatedMemoryRange();
@@ -210,8 +219,8 @@ class PoolSchema : public BaseSchema<t_pageCount, sizeof(t_elementType) * t_page
             ASSERT(range % address == 0u, "The address isn't aligned correctly");
 
             // Free the element
-            const uint32_t elementIndex = range / address;
-            bool pageIsEmtpy = currentPage->FreeElement();
+            const uint32_t elementIndex = static_cast<uint32_t>(range / address);
+            bool pageIsEmtpy = currentPage->FreeElement(elementIndex);
 
             // Remove the page if it's empty
             if (pageIsEmtpy && previousPage)
@@ -220,7 +229,7 @@ class PoolSchema : public BaseSchema<t_pageCount, sizeof(t_elementType) * t_page
                previousPage->m_next = currentPage->m_next;
 
                // Remove the page's memory
-               RemovePage({.m_pageAddress = static_cast<void*>(currentPage), .m_pageSize = sizeof(Page)});
+               RemovePage(PageDescriptor{.m_pageAddress = static_cast<void*>(currentPage), .m_pageSize = sizeof(Page)});
             }
 
             return;
@@ -234,7 +243,7 @@ class PoolSchema : public BaseSchema<t_pageCount, sizeof(t_elementType) * t_page
       ASSERT(false, "Failed to de-allocate the provided address");
    }
 
-   PageDescriptor AddPageInternal(uint32_t p_size) final
+   PageDescriptor AddPage(uint64_t p_size)
    {
       ASSERT(m_pageCount < t_pageCount, "Trying to allocate too many pages");
 
@@ -251,10 +260,10 @@ class PoolSchema : public BaseSchema<t_pageCount, sizeof(t_elementType) * t_page
       // Increment the total allocated pages
       m_pageCount++;
 
-      return PageDescriptor{.m_pageAddress = (void*).m_pageAddress, .m_pageSize = p_size};
+      return PageDescriptor{.m_pageAddress = (void*)page, .m_pageSize = p_size};
    }
 
-   void RemovePageInternal(PageDescriptor& m_pageDescriptor) final
+   void RemovePage(PageDescriptor m_pageDescriptor)
    {
       ASSERT(m_pageCount != 0u, "Trying to remove an empty page");
       m_pageCount--;
