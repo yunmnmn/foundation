@@ -32,10 +32,11 @@ struct AllocationDescriptor
    void* m_address = nullptr;
 
    // Allocation size
-   uint64_t m_size;
+   uint64_t m_size = 0u;
 
    // Starting address of the page where the allocation is
    void* m_pageAddress = nullptr;
+   uint64_t m_pageSize = 0u;
 };
 
 template <uint32_t t_pageCount, uint64_t t_pageSize>

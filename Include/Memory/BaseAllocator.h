@@ -38,6 +38,12 @@ struct Allocation
 // A single tracked page
 struct Page
 {
+   Page(uint8_t* pageAddress, uint64_t pageSize)
+   {
+      m_pageAddress = pageAddress;
+      m_pageSize = pageSize;
+   }
+
    uint8_t* m_pageAddress = nullptr;
    uint64_t m_pageSize = 0u;
 
@@ -54,7 +60,7 @@ class AllocatorTracker
    }
 
  protected:
-   AllocatorTracker() = default;
+   AllocatorTracker() = delete;
    // TODO change this
    AllocatorTracker(HashName p_allocatorName);
 
@@ -80,7 +86,9 @@ template <const char* t_name, typename t_schema>
 class BaseAllocator : public AllocatorTracker
 {
  public:
-   BaseAllocator() = default;
+   BaseAllocator() : AllocatorTracker(HashName(t_name))
+   {
+   }
 
    void* Allocate(uint64_t p_size)
    {
