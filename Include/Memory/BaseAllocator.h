@@ -21,13 +21,6 @@ namespace Foundation
 {
 namespace Memory
 {
-template <typename t_key, typename t_value>
-using unordered_map =
-    eastl::unordered_map<t_key, t_value, eastl::hash<t_key>, eastl::equal_to<t_key>, EastlBootstrapAllocator, false>;
-
-template <typename t_value>
-using vector = eastl::vector<t_value, EastlBootstrapAllocator>;
-
 // A single tracked allocation within a page
 struct Allocation
 {
@@ -50,6 +43,15 @@ struct Page
    unordered_map<void*, Allocation> m_allocations;
 };
 
+template <typename t_key, typename t_value>
+using unordered_map =
+    eastl::unordered_map<t_key, t_value, eastl::hash<t_key>, eastl::equal_to<t_key>, EastlBootstrapAllocator, false>;
+
+template <typename t_value>
+using vector = eastl::vector<t_value, EastlBootstrapAllocator>;
+
+using PageIt = vector<Page>::iterator;
+
 // Tracks allocation, and registers itself
 class AllocatorTracker
 {
@@ -70,11 +72,14 @@ class AllocatorTracker
    // Untrack allocated allocations from the schema
    void UntrackAllocation(void* p_address);
 
-   // Manges an added allocation
-   void AddPage(PageDescriptor p_pageDescriptor);
+   // Finds the page, and returns the pointer and index in the list
+   PageIt FindPageFromAddress(void* p_address);
 
-   // Manges a removed allocation
-   void RemovePage(void* p_pageAddress);
+   // Manges an added allocation
+   void AddPageForTracking(PageDescriptor&& p_pageDescriptor);
+
+   // Remove the page from the index
+   void RemovePageFromTracking(PageIt pageIt);
 
    vector<Page> m_pages;
 

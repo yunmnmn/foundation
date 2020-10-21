@@ -76,6 +76,7 @@ class PoolSchema : public BaseSchema<t_pageCount, sizeof(t_elementType) * t_page
          return nullptr;
       }
 
+      // Frees an element in the page. Returns true if the page is empty (no more allocations)
       inline bool FreeElement(uint32_t p_index)
       {
          // TODO
@@ -84,6 +85,11 @@ class PoolSchema : public BaseSchema<t_pageCount, sizeof(t_elementType) * t_page
          m_nextIndex[p_index] = m_freeElementIndex;
          m_freeElementIndex = p_index;
          m_elementCount--;
+
+         if (m_elementCount == 0)
+         {
+            return true;
+         }
 
          return false;
       }
@@ -109,6 +115,11 @@ class PoolSchema : public BaseSchema<t_pageCount, sizeof(t_elementType) * t_page
          return eastl::make_tuple(start, end);
       }
 
+      uint32_t GetElementCount() const
+      {
+         return m_elementCount;
+      }
+
       // Pointer to next page
       Page* m_next = nullptr;
 
@@ -132,7 +143,17 @@ class PoolSchema : public BaseSchema<t_pageCount, sizeof(t_elementType) * t_page
    PoolSchema() = default;
    ~PoolSchema()
    {
-      // TODO: delete all the pages
+      Page* currentPage = m_pages;
+      while (currentPage)
+      {
+         Page* cachedPage = currentPage;
+         currentPage = currentPage->m_next;
+
+         delete cachedPage;
+         m_pageCount--;
+      }
+
+      ASSERT(m_pageCount == 0u, "Not all pages are deleted");
    }
 
  private:
@@ -213,11 +234,11 @@ class PoolSchema : public BaseSchema<t_pageCount, sizeof(t_elementType) * t_page
       Page* previousPage = nullptr;
       while (currentPage)
       {
-         // TODO: dangerous
+         // TODO: dangerous, change to pointer specific arithmetic
          const uint64_t address = reinterpret_cast<uint64_t>(p_address);
 
          // Get the starting and ending address
-         auto [start, end] = currentPage->GetAllocatedMemoryRange();
+         const auto [start, end] = currentPage->GetAllocatedMemoryRange();
 
          // Check if the address is in range
          if (address >= start && address <= end)
@@ -229,17 +250,25 @@ class PoolSchema : public BaseSchema<t_pageCount, sizeof(t_elementType) * t_page
 
             // Free the element
             const uint32_t elementIndex = static_cast<uint32_t>(relative / typeSize);
-            bool pageIsEmtpy = currentPage->FreeElement(elementIndex);
+            const bool pageIsEmtpy = currentPage->FreeElement(elementIndex);
 
-            // TODO: handle the removing of the page
             // Remove the page if it's empty
-            if (pageIsEmtpy && previousPage)
+            if (pageIsEmtpy)
             {
-               // Link the previous page with the upcoming page
-               previousPage->m_next = currentPage->m_next;
+               // If the chain is severed in the middle or end
+               if (previousPage)
+               {
+                  // Link the previous page with the upcoming page
+                  previousPage->m_next = currentPage->m_next;
+               }
+               // If the page is severed at the front
+               else
+               {
+                  m_pages = currentPage->m_next;
+               }
 
                // Remove the page's memory
-               RemovePage(PageDescriptor{.m_pageAddress = static_cast<void*>(currentPage), .m_pageSize = sizeof(Page)});
+               RemovePage(currentPage);
             }
 
             return;
@@ -281,14 +310,17 @@ class PoolSchema : public BaseSchema<t_pageCount, sizeof(t_elementType) * t_page
       return page;
    }
 
-   void RemovePage(PageDescriptor m_pageDescriptor)
+   void RemovePage(Page* page)
    {
+      ASSERT(page != nullptr, "page isn't valid");
       ASSERT(m_pageCount != 0u, "Trying to remove an empty page");
-      m_pageCount--;
+      ASSERT(page->GetElementCount() == 0u, "Trying to remove an empty page");
 
-      // TODO: find a safer way
-      Page* page = reinterpret_cast<Page*>(m_pageDescriptor.m_pageAddress);
+      // Free the memory
       delete page;
+
+      // Decrement the page count
+      m_pageCount--;
    }
 
    constexpr uint64_t GetPageSize()
