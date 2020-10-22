@@ -47,7 +47,7 @@ class StaticEastlAllocatorWrapper
    }
 
  private:
-   t_allocator& GetAllocator()
+   static t_allocator& GetAllocator()
    {
       static t_allocator allocator;
       return allocator;

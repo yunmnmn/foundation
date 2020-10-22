@@ -37,7 +37,7 @@ class ManagerInterface
 
  private:
    static inline t_managerInterface* ms_managerInterface = nullptr;
-   static std::shared_mutex ms_registerMutex;
+   static inline std::shared_mutex ms_registerMutex;
 };
 
 }; // namespace Util

@@ -25,6 +25,17 @@ class PoolSchema : public BaseSchema<t_pageCount, sizeof(t_elementType) * t_page
       static constexpr uint32_t InvalidElementIndex = static_cast<uint32_t>(-1);
 
     public:
+      Page()
+      {
+         const uint64_t size = sizeof(t_elementType) * t_pageElementCount;
+         m_objects = static_cast<t_elementType*>(::malloc(size));
+      }
+
+      ~Page()
+      {
+         ::free(m_objects);
+      }
+
       void* GetMemoryAddress(uint32_t p_index)
       {
          t_elementType* freeObject = &m_objects[p_index];
@@ -125,7 +136,7 @@ class PoolSchema : public BaseSchema<t_pageCount, sizeof(t_elementType) * t_page
 
     private:
       // Array of objects
-      t_elementType m_objects[t_pageElementCount] = {};
+      t_elementType* m_objects;
       // List of elements that link to the next free index
       uint32_t m_nextIndex[t_pageElementCount] = {InvalidElementIndex};
 
@@ -323,7 +334,7 @@ class PoolSchema : public BaseSchema<t_pageCount, sizeof(t_elementType) * t_page
       m_pageCount--;
    }
 
-   constexpr uint64_t GetPageSize()
+   constexpr uint64_t GetPageSize() const
    {
       return sizeof(t_elementType) * t_pageElementCount;
    }
