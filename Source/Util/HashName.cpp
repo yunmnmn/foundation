@@ -6,6 +6,8 @@
 
 namespace Foundation
 {
+namespace Util
+{
 // Define the static members here
 std::mutex HashName::ms_hashNameMutex;
 bool HashName::ms_initialized = false;
@@ -66,9 +68,10 @@ const uint64_t HashName::Hash() const
    return m_Hash;
 }
 
-unordered_map<uint64_t, string>& Foundation::HashName::GetStringRegistery()
+unordered_map<uint64_t, string>& Foundation::Util::HashName::GetStringRegistery()
 {
    static unordered_map<uint64_t, string> stringRegistry;
    return stringRegistry;
 }
+}; // namespace Util
 }; // namespace Foundation

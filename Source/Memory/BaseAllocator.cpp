@@ -5,7 +5,7 @@ namespace Foundation
 namespace Memory
 {
 
-AllocatorTracker::AllocatorTracker(HashName p_allocatorName)
+AllocatorTracker::AllocatorTracker(Util::HashName p_allocatorName)
 {
    // Register the allocator in the manager
    MemoryManagerInterface::Get()->RegisterAllocator(p_allocatorName, this);

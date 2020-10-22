@@ -7,7 +7,7 @@ namespace Foundation
 {
 namespace Memory
 {
-void MemoryManager::RegisterAllocator(HashName p_hashName, AllocatorTracker* p_allocator)
+void MemoryManager::RegisterAllocator(Util::HashName p_hashName, AllocatorTracker* p_allocator)
 {
    std::lock_guard<std::mutex> guard(m_registrationMutex);
 
@@ -20,7 +20,7 @@ void MemoryManager::RegisterAllocator(HashName p_hashName, AllocatorTracker* p_a
    m_allocators[p_hashName.Hash()] = p_allocator;
 }
 
-void MemoryManager::UnregisterAllocator(HashName p_hashName)
+void MemoryManager::UnregisterAllocator(Util::HashName p_hashName)
 {
    std::lock_guard<std::mutex> guard(m_registrationMutex);
 

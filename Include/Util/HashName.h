@@ -17,6 +17,8 @@
 
 namespace Foundation
 {
+namespace Util
+{
 using string = eastl::basic_string<char, Memory::EastlBootstrapAllocator>;
 
 template <typename t_key, typename t_value>
@@ -50,4 +52,5 @@ struct HashName
    static std::mutex ms_hashNameMutex;
    static bool ms_initialized;
 };
+}; // namespace Util
 }; // namespace Foundation

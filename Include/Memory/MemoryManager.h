@@ -22,8 +22,8 @@ using unordered_map =
 // Registers all the allocators used
 class MemoryManager : public MemoryManagerInterface
 {
-   void RegisterAllocator(HashName p_hashName, AllocatorTracker* p_allocator) final;
-   void UnregisterAllocator(HashName p_hashName) final;
+   void RegisterAllocator(Util::HashName p_hashName, AllocatorTracker* p_allocator) final;
+   void UnregisterAllocator(Util::HashName p_hashName) final;
 
    unordered_map<uint64_t, AllocatorTracker*> m_allocators;
    std::mutex m_registrationMutex;

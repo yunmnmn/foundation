@@ -21,6 +21,15 @@ namespace Foundation
 {
 namespace Memory
 {
+template <typename t_key, typename t_value>
+using unordered_map =
+    eastl::unordered_map<t_key, t_value, eastl::hash<t_key>, eastl::equal_to<t_key>, EastlBootstrapAllocator, false>;
+
+template <typename t_value>
+using vector = eastl::vector<t_value, EastlBootstrapAllocator>;
+
+using PageIt = vector<struct Page>::iterator;
+
 // A single tracked allocation within a page
 struct Allocation
 {
@@ -43,15 +52,6 @@ struct Page
    unordered_map<void*, Allocation> m_allocations;
 };
 
-template <typename t_key, typename t_value>
-using unordered_map =
-    eastl::unordered_map<t_key, t_value, eastl::hash<t_key>, eastl::equal_to<t_key>, EastlBootstrapAllocator, false>;
-
-template <typename t_value>
-using vector = eastl::vector<t_value, EastlBootstrapAllocator>;
-
-using PageIt = vector<Page>::iterator;
-
 // Tracks allocation, and registers itself
 class AllocatorTracker
 {
@@ -64,7 +64,7 @@ class AllocatorTracker
  protected:
    AllocatorTracker() = delete;
    // TODO change this
-   AllocatorTracker(HashName p_allocatorName);
+   AllocatorTracker(Util::HashName p_allocatorName);
 
    // Track allocated allocations from the schema
    void TrackAllocation(AllocationDescriptor& p_address, uint64_t p_size);
@@ -91,7 +91,7 @@ template <const char* t_name, typename t_schema>
 class BaseAllocator : public AllocatorTracker
 {
  public:
-   BaseAllocator() : AllocatorTracker(HashName(t_name))
+   BaseAllocator() : AllocatorTracker(Util::HashName(t_name))
    {
    }
 

@@ -15,8 +15,8 @@ class AllocatorTracker;
 class MemoryManagerInterface : public Util::ManagerInterface<MemoryManagerInterface>
 {
  public:
-   virtual void RegisterAllocator(HashName p_hashName, AllocatorTracker* allocator) = 0;
-   virtual void UnregisterAllocator(HashName p_hashName) = 0;
+   virtual void RegisterAllocator(Util::HashName p_hashName, AllocatorTracker* allocator) = 0;
+   virtual void UnregisterAllocator(Util::HashName p_hashName) = 0;
 };
 
 }; // namespace Memory

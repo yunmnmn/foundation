@@ -10,8 +10,6 @@ namespace Memory
 template <typename t_allocator>
 class StaticEastlAllocatorWrapper
 {
-   using AllocatorDataType = typename std::aligned_storage<sizeof(t_allocator), std::alignof(t_allocator)>::type;
-
  public:
    StaticEastlAllocatorWrapper(const char* p_name)
    {
