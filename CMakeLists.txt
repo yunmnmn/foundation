@@ -79,6 +79,10 @@ target_include_directories(
       Include/${platformInclude}
 )
 
+if(MSVC)
+  target_compile_options(Foundation PRIVATE /W4 /WX)
+endif()
+
 set_target_properties(
    Foundation 
    PROPERTIES
