@@ -231,6 +231,10 @@ class PoolSchema : public BaseSchema<t_pageCount, sizeof(t_elementType) * t_page
 
    AllocationDescriptor PoolSchema::AllocateAlignedInternal(uint64_t p_size, uint32_t p_alignment, uint64_t p_offset) final
    {
+      UNUSED(p_size);
+      UNUSED(p_alignment);
+      UNUSED(p_offset);
+
       std::lock_guard<std::mutex> guard(m_schameMutex);
 
       ASSERT(false, "Not possible to allocate aligned with the PoolSchema");
@@ -239,6 +243,8 @@ class PoolSchema : public BaseSchema<t_pageCount, sizeof(t_elementType) * t_page
 
    void DeallocateInternal(void* p_address, uint64_t p_size) final
    {
+      UNUSED(p_size);
+
       std::lock_guard<std::mutex> guard(m_schameMutex);
 
       Page* currentPage = m_pages;

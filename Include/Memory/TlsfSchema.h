@@ -38,7 +38,10 @@ class TlsfSchema : public BaseSchema<t_pageCount, t_pageSize>
          void* addedAddress = tlsf_malloc(m_tlsf, p_size);
          ASSERT(addedAddress, "Failed to alloate memory with the TLSF schema");
 
-         return AllocationDescriptor{.m_address = addedAddress, .m_size = p_size, .m_pageAddress = pageDescriptor.m_pageAddress};
+         return AllocationDescriptor{.m_address = addedAddress,
+                                     .m_size = p_size,
+                                     .m_pageAddress = pageDescriptor.m_pageAddress,
+                                     .m_pageSize = pageDescriptor.m_pageSize};
       }
 
       return AllocationDescriptor{.m_address = address, .m_size = p_size};
@@ -46,6 +49,8 @@ class TlsfSchema : public BaseSchema<t_pageCount, t_pageSize>
 
    AllocationDescriptor AllocateAlignedInternal(uint64_t p_size, uint32_t p_alignment, uint64_t p_offset) final
    {
+      UNUSED(p_offset);
+
       std::lock_guard<std::mutex> lock(m_tlsfMutex);
 
       void* address = tlsf_memalign(m_tlsf, p_alignment, p_size);
@@ -63,6 +68,7 @@ class TlsfSchema : public BaseSchema<t_pageCount, t_pageSize>
 
    void DeallocateInternal(void* p_address, uint64_t p_size) final
    {
+      UNUSED(p_size);
       std::lock_guard<std::mutex> lock(m_tlsfMutex);
 
       tlsf_free(m_tlsf, p_address);
@@ -86,7 +92,7 @@ class TlsfSchema : public BaseSchema<t_pageCount, t_pageSize>
       tlsf_add_pool(m_tlsf, pageAddress, pageSize);
 
       // Create a new page
-      PageDescriptor pageDescriptor = {pageAddress, pageSize};
+      PageDescriptor pageDescriptor = {.m_pageAddress = pageAddress, .m_pageSize = pageSize};
       m_pageDescriptors[m_pageDescriptorIndex++] = pageDescriptor;
 
       return pageDescriptor;

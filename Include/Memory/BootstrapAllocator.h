@@ -8,6 +8,7 @@
 
 #include <Util/Assert.h>
 #include <Util/Util.h>
+#include <Util/Macro.h>
 
 #include <Memory/BaseSchema.h>
 #include <Memory/TlsfSchema.h>
@@ -52,29 +53,37 @@ class EastlBootstrapAllocator
  public:
    EastlBootstrapAllocator(const char* p_name)
    {
+      UNUSED(p_name);
    }
 
    EastlBootstrapAllocator(const EastlBootstrapAllocator& p_other)
    {
+      UNUSED(p_other);
    }
 
    EastlBootstrapAllocator(const EastlBootstrapAllocator& p_other, const char* p_name)
    {
+      UNUSED(p_other);
+      UNUSED(p_name);
    }
 
    bool operator!=(const EastlBootstrapAllocator& other)
    {
+      UNUSED(other);
       // Only one bootstrap allocator, so always return true
       return true;
    }
 
    static void* allocate(size_t p_size, int32_t p_flag = 0)
    {
+      UNUSED(p_flag);
       return BootstrapAllocator::Allocate(static_cast<uint32_t>(p_size));
    }
 
    static void* allocate(size_t p_size, size_t p_alignment, size_t p_offset, int p_flags = 0)
    {
+      UNUSED(p_offset);
+      UNUSED(p_flags);
       return BootstrapAllocator::AllocateAllign(static_cast<uint32_t>(p_size), static_cast<uint32_t>(p_alignment));
    }
 

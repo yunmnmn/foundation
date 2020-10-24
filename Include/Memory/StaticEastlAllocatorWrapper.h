@@ -13,14 +13,18 @@ class StaticEastlAllocatorWrapper
  public:
    StaticEastlAllocatorWrapper(const char* p_name)
    {
+      UNUSED(p_name);
    }
 
    StaticEastlAllocatorWrapper(const StaticEastlAllocatorWrapper& p_other)
    {
+      UNUSED(p_other);
    }
 
    StaticEastlAllocatorWrapper(const StaticEastlAllocatorWrapper& p_other, const char* p_name)
    {
+      UNUSED(p_other);
+      UNUSED(p_name);
    }
 
    bool operator!=(const BootstrapAllocator& other)
@@ -31,19 +35,20 @@ class StaticEastlAllocatorWrapper
 
    static void* allocate(size_t p_size, int32_t p_flag = 0)
    {
-      initializeAllocator(p_name);
-      return GetAllocator().Allocate(p_size);
+      UNUSED(p_flag);
+      return GetAllocator().Allocate(static_cast<uint64_t>(p_size));
    }
 
    static void* allocate(size_t p_size, size_t p_alignment, size_t p_offset, int p_flags = 0)
    {
-      initializeAllocator(p_name);
-      return GetAllocator().AllocateAllign(p_size, p_alignment);
+      UNUSED(p_offset);
+      UNUSED(p_flags);
+      return GetAllocator().AllocateAllign(static_cast<uint64_t>(p_size), static_cast<uint32_t>(p_alignment));
    }
 
    static void deallocate(void* p_address, size_t p_size)
    {
-      GetAllocator().Deallocate(p_address, p_size);
+      GetAllocator().Deallocate(p_address, static_cast<uint64_t>(p_size));
    }
 
  private:
