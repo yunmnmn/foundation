@@ -50,7 +50,10 @@ void AllocatorTracker::UntrackAllocation(void* p_address)
    pageIt->m_allocations.erase(allocation);
 
    // If the allocations in the map is empty, remove it
-   RemovePageFromTracking(pageIt);
+   if (pageIt->m_allocations.size() == 0)
+   {
+      RemovePageFromTracking(pageIt);
+   }
 }
 
 PageIt AllocatorTracker::FindPageFromAddress(void* p_address)
