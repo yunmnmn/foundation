@@ -25,6 +25,8 @@ template <typename t_key, typename t_value>
 using unordered_map =
     eastl::unordered_map<t_key, t_value, eastl::hash<t_key>, eastl::equal_to<t_key>, Memory::EastlBootstrapAllocator, false>;
 
+using HashKeyType = uint64_t;
+
 //-----------------------------------------------------------------------------
 const uint32_t HashNameMapCapacity = 1024u * 10u;
 //-----------------------------------------------------------------------------
@@ -48,6 +50,8 @@ struct HashName
    // Lazily creates a string registry
    static unordered_map<uint64_t, string>& GetStringRegistery();
    uint64_t m_Hash = 0u;
+
+   const char* m_name = nullptr;
 
    static std::mutex ms_hashNameMutex;
    static bool ms_initialized;

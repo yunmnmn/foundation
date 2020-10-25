@@ -44,6 +44,8 @@ HashName::HashName(const string& p_String) : m_Hash(0u)
       std::lock_guard<std::mutex> lock(ms_hashNameMutex);
       GetStringRegistery()[m_Hash] = p_String;
    }
+
+   m_name = GetStringRegistery()[m_Hash].c_str();
 }
 
 HashName::HashName(const char* p_string) : HashName(string(p_string))
