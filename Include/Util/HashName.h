@@ -7,11 +7,8 @@
 #include <Util/MurmurHash3.h>
 #include <Util/HashName.h>
 
-#include <Memory/BootstrapAllocator.h>
-#include <Memory/TlsfSchema.h>
-
-#include <EASTL/string.h>
-#include <EASTL/unordered_map.h>
+#include <Std/string_bootstrap.h>
+#include <Std/unordered_map_bootstrap.h>
 
 #include <mutex>
 
@@ -19,12 +16,6 @@ namespace Foundation
 {
 namespace Util
 {
-using string = eastl::basic_string<char, Memory::EastlBootstrapAllocator>;
-
-template <typename t_key, typename t_value>
-using unordered_map =
-    eastl::unordered_map<t_key, t_value, eastl::hash<t_key>, eastl::equal_to<t_key>, Memory::EastlBootstrapAllocator, false>;
-
 using HashKeyType = uint64_t;
 
 //-----------------------------------------------------------------------------
@@ -33,7 +24,7 @@ const uint32_t HashNameMapCapacity = 1024u * 10u;
 struct HashName
 {
    HashName();
-   HashName(const string& p_String);
+   HashName(const Std::string_bootstrap& p_String);
    HashName(const char* p_string);
    HashName(const HashName& p_Rhs) = default;
    bool operator==(const HashName& p_Rhs);
@@ -48,7 +39,7 @@ struct HashName
 
  private:
    // Lazily creates a string registry
-   static unordered_map<uint64_t, string>& GetStringRegistery();
+   static Std::unordered_map_bootstrap<uint64_t, Std::string_bootstrap>& GetStringRegistery();
    uint64_t m_Hash = 0u;
 
    const char* m_name = nullptr;

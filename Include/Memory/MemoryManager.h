@@ -6,26 +6,20 @@
 
 #include <EASTL/unordered_map.h>
 
-#include <Memory/BootstrapAllocator.h>
 #include <Memory/MemoryManagerInterface.h>
-#include <Memory/TlsfSchema.h>
-#include <Memory/BaseAllocator.h>
+#include <Std/unordered_map_bootstrap.h>
 
 namespace Foundation
 {
 namespace Memory
 {
-template <typename t_key, typename t_value>
-using unordered_map =
-    eastl::unordered_map<t_key, t_value, eastl::hash<t_key>, eastl::equal_to<t_key>, Memory::EastlBootstrapAllocator, false>;
-
 // Registers all the allocators used
 class MemoryManager : public MemoryManagerInterface
 {
    void RegisterAllocator(Util::HashName p_hashName, AllocatorTracker* p_allocator) final;
    void UnregisterAllocator(Util::HashName p_hashName) final;
 
-   unordered_map<uint64_t, AllocatorTracker*> m_allocators;
+   Std::unordered_map_bootstrap<uint64_t, AllocatorTracker*> m_allocators;
    std::mutex m_registrationMutex;
 };
 

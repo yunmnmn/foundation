@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include <shared_mutex>
 
+#include <Util/Assert.h>
+
 namespace Foundation
 {
 namespace Util

@@ -2,15 +2,10 @@
 
 #include <inttypes.h>
 #include <stdbool.h>
-#include <type_traits>
-
-#include <EASTL/unique_ptr.h>
 
 #include <Util/Assert.h>
-#include <Util/Util.h>
 #include <Util/Macro.h>
 
-#include <Memory/BaseSchema.h>
 #include <Memory/TlsfSchema.h>
 
 namespace Foundation
@@ -21,7 +16,7 @@ namespace Memory
 // Uses the TlsfSchema
 class BootstrapAllocator
 {
-   using BootstrapSchema = TlsfSchema<1u, 4u * 1024 * 1000u>;
+   using BootstrapSchema = TlsfSchema<1u, 4u * 102400 * 10u>;
 
    BootstrapAllocator() = delete;
 

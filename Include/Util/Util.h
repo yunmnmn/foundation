@@ -1,13 +1,14 @@
 #pragma once
 
-#include <stdio.h>
-#include <stdarg.h>
-#include <string>
-#include <atomic>
+#include <inttypes.h>
+#include <stdbool.h>
+
+#include <Std/string_bootstrap.h>
 
 namespace Foundation
 {
-//-----------------------------------------------------------------------------
+namespace Util
+{
 template <typename Functor>
 void CallOnce(bool& called, Functor functor)
 {
@@ -17,8 +18,8 @@ void CallOnce(bool& called, Functor functor)
       functor();
    }
 }
-//---------------------------------------------------------------------------------//
-inline std::string simpleSprintf(const char* p_Format, ...)
+
+inline Std::string_bootstrap SimpleSprintf(const char* p_Format, ...)
 {
    char buffer[1280];
    memset(buffer, 0, 1280);
@@ -30,9 +31,10 @@ inline std::string simpleSprintf(const char* p_Format, ...)
 
    buffer[len] = '\0';
 
-   return std::string(buffer);
+   // return Std::string_bootstrap(buffer);
+   return Std::string_bootstrap("");
 }
-//-----------------------------------------------------------------------------
+
 // Simple Linear congruential generator
 class LcgRandom
 {
@@ -55,5 +57,6 @@ class LcgRandom
       return rnd;
    }
 };
-//-----------------------------------------------------------------------------
+}; // namespace Util
+
 } // namespace Foundation

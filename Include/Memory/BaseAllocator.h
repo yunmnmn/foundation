@@ -4,15 +4,12 @@
 #include <stdbool.h>
 #include <functional>
 
-#include <Memory/BootstrapAllocator.h>
-#include <Memory/BaseSchema.h>
 #include <Memory/MemoryManagerInterface.h>
-#include <Memory/TlsfSchema.h>
+#include <Std/vector_bootstrap.h>
+#include <Std/unordered_map_bootstrap.h>
 
 #include <Util/HashName.h>
 
-#include <EASTL/unordered_map.h>
-#include <EASTL/vector.h>
 #include <EASTL/algorithm.h>
 
 #include <Util/Assert.h>
@@ -21,14 +18,7 @@ namespace Foundation
 {
 namespace Memory
 {
-template <typename t_key, typename t_value>
-using unordered_map =
-    eastl::unordered_map<t_key, t_value, eastl::hash<t_key>, eastl::equal_to<t_key>, EastlBootstrapAllocator, false>;
-
-template <typename t_value>
-using vector = eastl::vector<t_value, EastlBootstrapAllocator>;
-
-using PageIt = vector<struct Page>::iterator;
+using PageIt = Std::vector_bootstrap<struct Page>::iterator;
 
 // A single tracked allocation within a page
 struct Allocation
@@ -49,7 +39,7 @@ struct Page
    uint8_t* m_pageAddress = nullptr;
    uint64_t m_pageSize = 0u;
 
-   unordered_map<void*, Allocation> m_allocations;
+   Std::unordered_map_bootstrap<void*, Allocation> m_allocations;
 };
 
 // Tracks allocation, and registers itself
@@ -81,7 +71,7 @@ class AllocatorTracker
    // Remove the page from the index
    void RemovePageFromTracking(PageIt pageIt);
 
-   vector<Page> m_pages;
+   Std::vector_bootstrap<Page> m_pages;
 
    std::mutex m_memoryTrackingMutex;
 };

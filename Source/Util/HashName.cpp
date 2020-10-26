@@ -16,12 +16,12 @@ HashName::HashName() : m_Hash(0u)
 {
    CallOnce(ms_initialized, [&]() {
       std::lock_guard<std::mutex> lock(ms_hashNameMutex);
-      string empty("test");
+      Std::string_bootstrap empty("test");
       GetStringRegistery()[0] = empty;
    });
 }
 
-HashName::HashName(const string& p_String) : m_Hash(0u)
+HashName::HashName(const Std::string_bootstrap& p_String) : m_Hash(0u)
 {
    if (p_String.empty())
       return;
@@ -48,7 +48,7 @@ HashName::HashName(const string& p_String) : m_Hash(0u)
    m_name = GetStringRegistery()[m_Hash].c_str();
 }
 
-HashName::HashName(const char* p_string) : HashName(string(p_string))
+HashName::HashName(const char* p_string) : HashName(Std::string_bootstrap(p_string))
 {
 }
 
@@ -70,9 +70,9 @@ const uint64_t HashName::Hash() const
    return m_Hash;
 }
 
-unordered_map<uint64_t, string>& Foundation::Util::HashName::GetStringRegistery()
+Std::unordered_map_bootstrap<uint64_t, Std::string_bootstrap>& Foundation::Util::HashName::GetStringRegistery()
 {
-   static unordered_map<uint64_t, string> stringRegistry;
+   static Std::unordered_map_bootstrap<uint64_t, Std::string_bootstrap> stringRegistry;
    return stringRegistry;
 }
 }; // namespace Util

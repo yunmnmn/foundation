@@ -65,6 +65,9 @@ target_sources(
       Include/Util/ManagerInterface.h
       Include/Util/MurmurHash3.h
       Include/Util/Util.h
+      Include/Std/string_bootstrap.h
+      Include/Std/vector_bootstrap.h
+      Include/Std/unordered_map_bootstrap.h
 )
 
 # Get the platform specific includes
