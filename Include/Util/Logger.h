@@ -35,6 +35,14 @@ enum class Severity : uint8_t
    Error
 };
 
+enum class Color : uint8_t
+{
+   White,
+   Yellow,
+   Green,
+   Red
+};
+
 struct LogEntry
 {
    LogEntry(Std::string_bootstrap p_Log, Severity p_LogSeverity, const char* const p_FileName, const char* const p_FunctionName,

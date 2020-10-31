@@ -19,7 +19,8 @@ void CallOnce(bool& called, Functor functor)
    }
 }
 
-inline Std::string_bootstrap SimpleSprintf(const char* p_Format, ...)
+template <typename t_stringType>
+inline t_stringType SimpleSprintf(const char* p_Format, ...)
 {
    char buffer[1280];
    memset(buffer, 0, 1280);
@@ -31,32 +32,8 @@ inline Std::string_bootstrap SimpleSprintf(const char* p_Format, ...)
 
    buffer[len] = '\0';
 
-   // return Std::string_bootstrap(buffer);
-   return Std::string_bootstrap("");
+   return t_stringType(buffer);
 }
-
-// Simple Linear congruential generator
-class LcgRandom
-{
-   uint32_t state;
-
- public:
-   LcgRandom() : state(2578432553)
-   {
-   }
-
-   void SetSeed(uint32_t seed)
-   {
-      state = seed;
-   }
-
-   uint16_t Get()
-   {
-      state = 214013 * state + 2531011;
-      uint16_t rnd = (state >> 16);
-      return rnd;
-   }
-};
 }; // namespace Util
 
 } // namespace Foundation

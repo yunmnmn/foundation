@@ -18,9 +18,6 @@ namespace Util
 {
 using HashKeyType = uint64_t;
 
-//-----------------------------------------------------------------------------
-const uint32_t HashNameMapCapacity = 1024u * 10u;
-//-----------------------------------------------------------------------------
 struct HashName
 {
    HashName();
