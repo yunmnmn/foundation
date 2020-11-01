@@ -29,7 +29,7 @@ class ManagerInterface
       ms_managerInterface = p_managerInterface;
    }
 
-   static void Unregister(t_managerInterface* p_managerInterface)
+   static void Unregister()
    {
       std::unique_lock<std::shared_mutex> lock(ms_registerMutex);
 
