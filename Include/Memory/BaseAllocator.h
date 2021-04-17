@@ -132,18 +132,18 @@ class DefaultAllocator : public BaseAllocator<t_name, t_schema>
 
    AllocationDescriptor AllocateInternal(uint64_t p_size) final
    {
-      return m_schema.Allocate(p_size);
+      return this->m_schema.Allocate(p_size);
    }
 
    AllocationDescriptor AllocateAlignInternal(uint64_t p_size, uint32_t p_alignment) final
    {
       // TODO: 0u, huh?
-      return m_schema.AllocateAligned(p_size, p_alignment, 0u);
+      return this->m_schema.AllocateAligned(p_size, p_alignment, 0u);
    }
 
    void DeallocateInternal(void* p_address, uint64_t p_size) final
    {
-      m_schema.Deallocate(p_address, p_size);
+      this->m_schema.Deallocate(p_address, p_size);
    }
 };
 

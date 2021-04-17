@@ -25,4 +25,8 @@
       {                                                                                                                            \
          ClassAllocator::Deallocate(p_address, p_size);                                                                            \
       }                                                                                                                            \
+   }                                                                                                                               \
+   inline void* operator new[]([[maybe_unused]] size_t p_size)                                                                     \
+   {                                                                                                                               \
+      return nullptr;                                                                                                              \
    }

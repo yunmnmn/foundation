@@ -46,32 +46,26 @@ class BootstrapAllocator
 class EastlBootstrapAllocator
 {
  public:
-   EastlBootstrapAllocator(const char* p_name)
+   EastlBootstrapAllocator([[maybe_unused]] const char* p_name)
    {
-      UNUSED(p_name);
    }
 
-   EastlBootstrapAllocator(const EastlBootstrapAllocator& p_other)
+   EastlBootstrapAllocator([[maybe_unused]] const EastlBootstrapAllocator& p_other)
    {
-      UNUSED(p_other);
    }
 
-   EastlBootstrapAllocator(const EastlBootstrapAllocator& p_other, const char* p_name)
+   EastlBootstrapAllocator([[maybe_unused]] const EastlBootstrapAllocator& p_other, [[maybe_unused]] const char* p_name)
    {
-      UNUSED(p_other);
-      UNUSED(p_name);
    }
 
-   bool operator!=(const EastlBootstrapAllocator& other)
+   bool operator!=([[maybe_unused]] const EastlBootstrapAllocator& other)
    {
-      UNUSED(other);
       // Only one bootstrap allocator, so always return true
       return true;
    }
 
-   static void* allocate(size_t p_size, int32_t p_flag = 0)
+   static void* allocate(size_t p_size, [[maybe_unused]] int32_t p_flag = 0)
    {
-      UNUSED(p_flag);
       return BootstrapAllocator::Allocate(static_cast<uint32_t>(p_size));
    }
 

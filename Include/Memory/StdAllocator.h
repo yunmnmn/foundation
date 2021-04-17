@@ -64,13 +64,3 @@ class StdAllocatorInterface
 
 }; // namespace Memory
 }; // namespace Foundation
-
-namespace YStd
-{
-using StdAllocatorTlsf =
-    Foundation::Memory::AllocatorInterface<Foundation::Memory::StdDescriptor, Foundation::Memory::TlsfAllocator>;
-
-template <typename t_type, typename t_allocator = Foundation::Memory::StdAllocatorInterface<t_type, StdAllocatorTlsf>>
-using vector = EAStl::vector<t_type, t_allocator>;
-
-} // namespace YStd
