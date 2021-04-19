@@ -29,6 +29,8 @@ typedef unsigned __int64 uint64_t;
 #endif // !defined(_MSC_VER)
 
 //-----------------------------------------------------------------------------
+uint32_t bufferLengthAlign64(uint32_t p_Size);
+
 void MurmurHash3_x86_32(const void* key, int len, uint32_t seed, void* out);
 
 void MurmurHash3_x86_128(const void* key, int len, uint32_t seed, void* out);
@@ -36,6 +38,20 @@ void MurmurHash3_x86_128(const void* key, int len, uint32_t seed, void* out);
 void MurmurHash3_x64_128(const void* key, int len, uint32_t seed, void* out);
 
 void MurmurHash3_x64_64(const void* key, int len, uint32_t seed, void* out);
+
+template <typename t_type>
+uint64_t MurmurHash3_x64_64_Helper(const t_type* key)
+{
+   const uint32_t hashLength = bufferLengthAlign64(sizeof(t_type));
+   ASSERT(hashLength < 1024, "Type is too big");
+
+   const uint32_t seed = 1991u;
+
+   uint64_t hash = 0u;
+   MurmurHash3_x64_64(key, hashLength, seed, (void*)&hash);
+
+   return hash;
+}
 //-----------------------------------------------------------------------------
 // Align to 8 bytes (64 bits)
 uint32_t bufferLengthAlign64(uint32_t p_Size);
