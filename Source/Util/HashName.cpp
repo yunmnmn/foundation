@@ -12,7 +12,7 @@ namespace Util
 std::mutex HashName::ms_hashNameMutex;
 bool HashName::ms_initialized = false;
 
-HashName::HashName() : m_Hash(0u)
+HashName::HashName()
 {
    CallOnce(ms_initialized, [&]() {
       std::lock_guard<std::mutex> lock(ms_hashNameMutex);
@@ -21,7 +21,7 @@ HashName::HashName() : m_Hash(0u)
    });
 }
 
-HashName::HashName(const Std::string_bootstrap& p_String) : m_Hash(0u)
+HashName::HashName(const Std::string_bootstrap& p_String)
 {
    if (p_String.empty())
       return;
