@@ -27,7 +27,7 @@ class StaticEastlAllocatorWrapper
       UNUSED(p_name);
    }
 
-   bool operator!=(const BootstrapAllocator& other)
+   bool operator!=([[maybe_unused]] const StaticEastlAllocatorWrapper& other)
    {
       // Only one bootstrap allocator, so always return true
       return true;
