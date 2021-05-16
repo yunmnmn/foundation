@@ -11,6 +11,8 @@ template <typename t_allocator>
 class StaticEastlAllocatorWrapper
 {
  public:
+   StaticEastlAllocatorWrapper() = default;
+
    StaticEastlAllocatorWrapper(const char* p_name)
    {
       UNUSED(p_name);
