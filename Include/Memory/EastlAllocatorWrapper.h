@@ -23,7 +23,7 @@ class EastlAllocatorWrapper
    {
    }
 
-   bool operator!=(const BootstrapAllocator& other)
+   bool operator!=(const EastlAllocatorWrapper& other)
    {
       // Only one bootstrap allocator, so always return true
       return true;

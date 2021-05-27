@@ -32,6 +32,7 @@ class StaticEastlAllocatorWrapper
    bool operator!=([[maybe_unused]] const StaticEastlAllocatorWrapper& other)
    {
       // Only one bootstrap allocator, so always return true
+      // TODO: this is probably wrong
       return true;
    }
 
@@ -56,8 +57,9 @@ class StaticEastlAllocatorWrapper
  private:
    static t_allocator& GetAllocator()
    {
-      static t_allocator allocator;
-      return allocator;
+      t_allocator* allocator = Foundation::GlobalEnvironment::CreateOrGetGlobalVariableFromType<t_allocator>(
+          []() -> t_allocator* { return new t_allocator(); });
+      return *allocator;
    }
 };
 }; // namespace Memory

@@ -97,5 +97,6 @@ target_link_libraries(
    PUBLIC
       EASTL
       tlsf
+      GlobalEnvironment
    PRIVATE
 )

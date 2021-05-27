@@ -6,6 +6,8 @@
 #include <Util/Assert.h>
 #include <Util/Macro.h>
 
+#include <GlobalEnvironment.h>
+
 #include <Memory/TlsfSchema.h>
 
 namespace Foundation
@@ -23,23 +25,29 @@ class BootstrapAllocator
  public:
    static void* Allocate(uint32_t p_size)
    {
-      AllocationDescriptor desc = ms_schema.Allocate(p_size);
+      AllocationDescriptor desc = GetSchema().Allocate(p_size);
       return desc.m_address;
    }
 
    static void* AllocateAllign(uint32_t p_size, uint32_t p_alignment)
    {
-      AllocationDescriptor desc = ms_schema.AllocateAligned(p_size, p_alignment, 0u);
+      AllocationDescriptor desc = GetSchema().AllocateAligned(p_size, p_alignment, 0u);
       return desc.m_address;
    }
 
    static void Deallocate(void* p_address, uint32_t p_size)
    {
-      ms_schema.Deallocate(p_address, p_size);
+      GetSchema().Deallocate(p_address, p_size);
+   }
+
+   static BootstrapSchema& GetSchema()
+   {
+      BootstrapSchema* schema = Foundation::GlobalEnvironment::CreateOrGetGlobalVariableFromType<BootstrapSchema>(
+          []() -> BootstrapSchema* { return new BootstrapSchema(); });
+      return *schema;
    }
 
  private:
-   static BootstrapSchema ms_schema;
 };
 
 // BootstrapAllocator for EASTL containers
@@ -60,7 +68,7 @@ class EastlBootstrapAllocator
 
    bool operator!=([[maybe_unused]] const EastlBootstrapAllocator& other)
    {
-      // Only one bootstrap allocator, so always return true
+      // Only one bootstrap allocator, so always return true, even across DLLs
       return true;
    }
 

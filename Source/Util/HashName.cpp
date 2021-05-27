@@ -72,8 +72,11 @@ const uint64_t HashName::Hash() const
 
 Std::unordered_map_bootstrap<uint64_t, Std::string_bootstrap>& Foundation::Util::HashName::GetStringRegistery()
 {
-   static Std::unordered_map_bootstrap<uint64_t, Std::string_bootstrap> stringRegistry;
-   return stringRegistry;
+   using HashMap = Std::unordered_map_bootstrap<uint64_t, Std::string_bootstrap>;
+
+   HashMap* hashMap =
+       Foundation::GlobalEnvironment::CreateOrGetGlobalVariableFromType<HashMap>([]() -> HashMap* { return new HashMap(); });
+   return *hashMap;
 }
 }; // namespace Util
 }; // namespace Foundation

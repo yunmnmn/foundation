@@ -3,6 +3,8 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
+#include <GlobalEnvironment.h>
+
 namespace Foundation
 {
 namespace Memory
@@ -29,8 +31,9 @@ class StaticAllocatorWrapper
  private:
    static t_allocator& GetAllocator()
    {
-      static t_allocator allocator;
-      return allocator;
+      t_allocator* allocator = Foundation::GlobalEnvironment::CreateOrGetGlobalVariableFromType<t_allocator>(
+          []() -> t_allocator* { return new t_allocator(); });
+      return *allocator;
    }
 };
 }; // namespace Memory
