@@ -53,6 +53,7 @@ class AllocatorTracker
 
  protected:
    AllocatorTracker() = delete;
+   ~AllocatorTracker() = default;
    // TODO change this
    AllocatorTracker(Util::HashName p_allocatorName);
 
@@ -81,9 +82,8 @@ template <const char* t_name, typename t_schema>
 class BaseAllocator : public AllocatorTracker
 {
  public:
-   BaseAllocator() : AllocatorTracker(Util::HashName(t_name))
-   {
-   }
+   BaseAllocator() : AllocatorTracker(Util::HashName(t_name)){};
+   ~BaseAllocator() = default;
 
    void* Allocate(uint64_t p_size)
    {
@@ -129,6 +129,7 @@ class DefaultAllocator : public BaseAllocator<t_name, t_schema>
 
  public:
    DefaultAllocator() = default;
+   ~DefaultAllocator() = default;
 
    AllocationDescriptor AllocateInternal(uint64_t p_size) final
    {

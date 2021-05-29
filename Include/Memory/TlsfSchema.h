@@ -26,6 +26,11 @@ class TlsfSchema : public BaseSchema<t_pageCount, t_pageSize>
       m_tlsf = tlsf_create(memory);
    }
 
+   ~TlsfSchema()
+   {
+      tlsf_destroy(m_tlsf);
+   }
+
  protected:
    AllocationDescriptor AllocateInternal(uint64_t p_size) final
    {

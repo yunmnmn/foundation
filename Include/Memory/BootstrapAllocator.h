@@ -42,9 +42,9 @@ class BootstrapAllocator
 
    static BootstrapSchema& GetSchema()
    {
-      BootstrapSchema* schema = Foundation::GlobalEnvironment::CreateOrGetGlobalVariableFromType<BootstrapSchema>(
-          []() -> BootstrapSchema* { return new BootstrapSchema(); });
-      return *schema;
+      GlobalVariableRef<BootstrapSchema> schema =
+          Foundation::GlobalEnvironment::CreateOrGetGlobalVariableFromType<BootstrapSchema>();
+      return *schema.GetVariable();
    }
 
  private:

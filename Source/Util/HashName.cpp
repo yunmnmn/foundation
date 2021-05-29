@@ -74,9 +74,8 @@ Std::unordered_map_bootstrap<uint64_t, Std::string_bootstrap>& Foundation::Util:
 {
    using HashMap = Std::unordered_map_bootstrap<uint64_t, Std::string_bootstrap>;
 
-   HashMap* hashMap =
-       Foundation::GlobalEnvironment::CreateOrGetGlobalVariableFromType<HashMap>([]() -> HashMap* { return new HashMap(); });
-   return *hashMap;
+   GlobalVariableRef<HashMap> hashMap = Foundation::GlobalEnvironment::CreateOrGetGlobalVariableFromType<HashMap>();
+   return *hashMap.GetVariable();
 }
 }; // namespace Util
 }; // namespace Foundation

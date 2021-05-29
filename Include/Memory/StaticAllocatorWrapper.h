@@ -31,9 +31,8 @@ class StaticAllocatorWrapper
  private:
    static t_allocator& GetAllocator()
    {
-      t_allocator* allocator = Foundation::GlobalEnvironment::CreateOrGetGlobalVariableFromType<t_allocator>(
-          []() -> t_allocator* { return new t_allocator(); });
-      return *allocator;
+      GlobalVariableRef<t_allocator> allocator = Foundation::GlobalEnvironment::CreateOrGetGlobalVariableFromType<t_allocator>();
+      return *allocator.GetVariable();
    }
 };
 }; // namespace Memory
