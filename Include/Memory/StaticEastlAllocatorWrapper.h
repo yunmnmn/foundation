@@ -57,7 +57,8 @@ class StaticEastlAllocatorWrapper
  private:
    static t_allocator& GetAllocator()
    {
-      GlobalVariableRef<t_allocator> allocator = Foundation::GlobalEnvironment::CreateOrGetGlobalVariableFromType<t_allocator>();
+      static GlobalVariableRef<t_allocator> allocator =
+          Foundation::GlobalEnvironment::CreateOrGetGlobalVariableFromType<t_allocator>();
       return *allocator.GetVariable();
    }
 };
