@@ -2,10 +2,10 @@ cmake_minimum_required(VERSION 3.13.1)
 
 # Check if it's a root CMakeList or a added subdirectory
 #if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeUtils")
+#list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeUtils")
 #endif()
 
-include(Utils)
+include(CMakeUtils/Utils.cmake)
 
 project(
    Foundation
@@ -29,7 +29,7 @@ add_subdirectory(Extern)
 add_library(Foundation)
 
 # Get the platform specific sources
-PlatformSource(platformSource)
+PlatformSource(m_platformSource)
 target_sources(
    Foundation 
    PRIVATE 
@@ -43,7 +43,7 @@ target_sources(
       Source/Util/Logger.cpp
       Source/Util/MurmurHash3.cpp
       # Include the platform specific files
-      ${platformSource}
+      ${m_platformSource}
       # Include the headers
       Include/Memory/BaseAllocator.h
       Include/Memory/BaseSchema.h
@@ -69,6 +69,8 @@ target_sources(
       Include/Std/vector_bootstrap.h
       Include/Std/unordered_map_bootstrap.h
 )
+
+GenerateFolderStructure(Foundation)
 
 # Get the platform specific includes
 PlatformPath(platformInclude)
@@ -100,3 +102,4 @@ target_link_libraries(
       GlobalEnvironment
    PRIVATE
 )
+
