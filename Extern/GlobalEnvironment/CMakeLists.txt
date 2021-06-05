@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.13.1)
 #Set the GlobalEnvironment version map here
 set (GLOBALENVIRONMENT 1.0.0)
 
+#TODO: Add util submodule
+
 # Add a define so it exports the definitions
 add_compile_definitions(DLL_EXPORTS)
 
