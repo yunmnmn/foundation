@@ -1,4 +1,4 @@
-Set(sources
-Parallel/SpinAndSleepLock.cpp
-IO/FileIO.cpp
+Set(_files
+   Parallel/SpinAndSleepLock.cpp
+   ../Common/IO/FileIO.cpp
 )

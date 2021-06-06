@@ -29,7 +29,7 @@ add_subdirectory(Extern)
 add_library(Foundation)
 
 # Get the platform specific sources
-PlatformSource(m_platformSource)
+PlatformSource(_platformSource)
 target_sources(
    Foundation 
    PRIVATE 
@@ -43,7 +43,7 @@ target_sources(
       Source/Util/Logger.cpp
       Source/Util/MurmurHash3.cpp
       # Include the platform specific files
-      ${m_platformSource}
+      ${_platformSource}
       # Include the headers
       Include/Memory/BaseAllocator.h
       Include/Memory/BaseSchema.h
