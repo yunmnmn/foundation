@@ -68,6 +68,7 @@ target_sources(
       Include/Std/string_bootstrap.h
       Include/Std/vector_bootstrap.h
       Include/Std/unordered_map_bootstrap.h
+      Include/IO/FileIOInterface.h
 )
 
 GenerateFolderStructure(Foundation)
@@ -82,6 +83,7 @@ target_include_directories(
       Include
       # Include the platform specific includes
       Include/${platformInclude}
+      Include/_Platform/Common
 )
 
 if(MSVC)
