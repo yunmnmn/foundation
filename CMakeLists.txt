@@ -34,6 +34,7 @@ target_sources(
    Foundation 
    PRIVATE 
       #include the cpp
+      Source/Foundation.cpp
       Source/Memory/BaseAllocator.cpp
       Source/Memory/MemoryManager.cpp
       Source/Memory/BootstrapAllocator.cpp

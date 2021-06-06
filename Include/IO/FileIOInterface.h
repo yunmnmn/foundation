@@ -13,7 +13,7 @@ struct FileIODescriptor
 class FileIOInterface
 {
  public:
-   virtual ~FileIOInterface() = 0;
+   virtual ~FileIOInterface(){};
 
    virtual void Open() = 0;
    virtual void Close() = 0;
