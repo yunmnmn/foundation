@@ -31,6 +31,8 @@ class FileIOCommonImpl : public FileIOInterface
    friend eastl::shared_ptr<FileIOInterface> FileIOCommon::CreateFileIO(FileIODescriptor&& p_descriptor);
 
  private:
+   std::ios_base::openmode FileIOFlagsToNative(FileIOFlags p_flags);
+
    FileIOCommonImpl(FileIODescriptor&& p_descriptor);
 
    Util::HashName m_path;
@@ -58,7 +60,7 @@ Foundation::IO::FileIOCommonImpl::~FileIOCommonImpl()
    }
 }
 
-void FileIOCommonImpl::Open()
+std::ios_base::openmode Foundation::IO::FileIOCommonImpl::FileIOFlagsToNative(FileIOFlags p_flags)
 {
    static const Foundation::Std::unordered_map_bootstrap<FileIOFlags, std::ios_base::openmode> FileIOFlagsToNativeMap = {
        {FileIOFlags::FileIOIn, std::fstream::in},
@@ -66,25 +68,12 @@ void FileIOCommonImpl::Open()
        {FileIOFlags::FileIOBinary, std::fstream::binary},
    };
 
-   // TODO: Statically check if it's all 32 bit flags
-   // Calculate the FileIOFlags to native
-   uint32_t bits = 0u;
-   {
-      for (uint32_t i = 0u; i < 32u; i++)
-      {
-         const uint32_t currentBit = (1 << i);
-         if (currentBit & static_cast<uint32_t>(m_fileIOFlags))
-         {
-            const auto& mapIt = FileIOFlagsToNativeMap.find(static_cast<FileIOFlags>(currentBit));
-            ASSERT(mapIt != FileIOFlagsToNativeMap.end(), "FileIOFlags conversion to std::ios_base::openmode doesn't exist");
+   return Foundation::Util::FlagsToNativeHelper<std::ios_base::openmode>(FileIOFlagsToNativeMap, p_flags);
+}
 
-            bits |= static_cast<uint32_t>(mapIt->second);
-         }
-      }
-   }
-   const std::ios_base::openmode openMode = static_cast<std::ios_base::openmode>(bits);
-
-   m_fileStream.open(m_path.GetCStr(), openMode);
+void FileIOCommonImpl::Open()
+{
+   m_fileStream.open(m_path.GetCStr(), FileIOFlagsToNative(m_fileIOFlags));
 }
 
 void FileIOCommonImpl::Close()
