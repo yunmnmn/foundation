@@ -8,7 +8,7 @@ enum class FileIOFlags : uint32_t
 {
    FileIOIn = (1 << 0),
    FileIOOut = (1 << 1),
-   FileIOBinar = (1 << 2),
+   FileIOBinary = (1 << 2),
 };
 
 struct FileIODescriptor
