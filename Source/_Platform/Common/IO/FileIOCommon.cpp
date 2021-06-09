@@ -54,7 +54,7 @@ Foundation::IO::FileIOCommonImpl::~FileIOCommonImpl()
 {
    if (m_fileStream.is_open())
    {
-      m_fileStream.close();
+      Close();
    }
 }
 
@@ -63,7 +63,7 @@ void FileIOCommonImpl::Open()
    static const Foundation::Std::unordered_map_bootstrap<FileIOFlags, std::ios_base::openmode> FileIOFlagsToNativeMap = {
        {FileIOFlags::FileIOIn, std::fstream::in},
        {FileIOFlags::FileIOOut, std::fstream::out},
-       {FileIOFlags::FileIOBinar, std::fstream::binary},
+       {FileIOFlags::FileIOBinary, std::fstream::binary},
    };
 
    // TODO: Statically check if it's all 32 bit flags
