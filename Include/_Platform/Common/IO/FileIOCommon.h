@@ -1,4 +1,4 @@
-#include <EASTL/shared_ptr.h>
+#include <Std/shared_ptr_bootstrap.h>
 
 #include <IO/FileIOInterface.h>
 

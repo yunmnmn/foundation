@@ -43,7 +43,7 @@ class FileIOCommonImpl : public FileIOInterface
 
 eastl::shared_ptr<FileIOInterface> FileIOCommon::CreateFileIO(FileIODescriptor&& p_descriptor)
 {
-   return eastl::shared_ptr<FileIOInterface>(new FileIOCommonImpl(eastl::move(p_descriptor)));
+   return Std::CreateSharedPtr(new FileIOCommonImpl(eastl::move(p_descriptor)));
 }
 
 FileIOCommonImpl::FileIOCommonImpl(FileIODescriptor&& p_descriptor)

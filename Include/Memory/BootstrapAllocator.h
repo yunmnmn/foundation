@@ -54,6 +54,7 @@ class BootstrapAllocator
 class EastlBootstrapAllocator
 {
  public:
+   EastlBootstrapAllocator() = default;
    EastlBootstrapAllocator([[maybe_unused]] const char* p_name)
    {
    }
