@@ -53,7 +53,6 @@ class PoolSchema : public BaseSchema<t_pageCount, sizeof(t_elementType) * t_page
 
          // Get the address of the index that is free
          const uint32_t nextIndex = m_nextIndex[m_freeElementIndex];
-         ASSERT(nextIndex != InvalidElementIndex, "This index is invalid, but it shouldn't be");
 
          // Get the memory of the reused element
          void* objectAddress = GetMemoryAddress(m_freeElementIndex);
@@ -92,7 +91,6 @@ class PoolSchema : public BaseSchema<t_pageCount, sizeof(t_elementType) * t_page
       {
          // TODO
          // ASSERT(m_nextIndex[p_index] == InvalidElementIndex, "This index should be invalid");
-
          m_nextIndex[p_index] = m_freeElementIndex;
          m_freeElementIndex = p_index;
          m_elementCount--;
