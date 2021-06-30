@@ -15,6 +15,7 @@ project(
       C
 )
 
+# Enable the latest C++ features
 if (MSVC_VERSION GREATER_EQUAL "1900")
     include(CheckCXXCompilerFlag)
     CHECK_CXX_COMPILER_FLAG("/std:c++latest" _cpp_latest_flag_supported)
@@ -23,6 +24,7 @@ if (MSVC_VERSION GREATER_EQUAL "1900")
     endif()
 endif()
 
+# Add the subdirectory of submodules
 add_subdirectory(Extern)
 
 # Define the library
@@ -70,6 +72,7 @@ target_sources(
       Include/Std/vector_bootstrap.h
       Include/Std/unordered_map_bootstrap.h
       Include/IO/FileIOInterface.h
+      Include/IO/FileWatcherInterface.h
 )
 
 GenerateFolderStructure(Foundation)
@@ -80,6 +83,9 @@ target_include_directories(
    Foundation
    PRIVATE
       Source
+      # Include the platform specific includes
+      Source/${platformInclude}
+      Source/_Platform/Common
    PUBLIC
       Include
       # Include the platform specific includes
