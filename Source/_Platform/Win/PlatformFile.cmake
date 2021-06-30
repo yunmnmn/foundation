@@ -1,3 +1,4 @@
 Set(_files
-   ../Common/IO/FileIOCommon.cpp
+   IO/FileIOWin.cpp
+   IO/FileWatcherWin.cpp
 )

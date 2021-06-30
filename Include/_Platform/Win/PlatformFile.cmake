@@ -1,4 +1,5 @@
 Set(_files
-   IO/FileIO.h
+   IO/FileIOWin.h
    ../Common/IO/FileIOCommon.h
+   IO/FileWatcherWin.h
 )
