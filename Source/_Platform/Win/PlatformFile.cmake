@@ -1,4 +1,4 @@
 Set(_files
-   IO/FileIOWin.cpp
-   IO/FileWatcherWin.cpp
+   IO/FileIO.cpp
+   IO/FileWatcher.cpp
 )

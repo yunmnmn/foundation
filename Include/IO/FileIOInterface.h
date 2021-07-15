@@ -22,7 +22,9 @@ class FileIOInterface
  public:
    virtual ~FileIOInterface(){};
 
+   // Opens a file for reading/writing
    virtual void Open() = 0;
+   // Closes a file for reading/writing
    virtual void Close() = 0;
 
    // Read data

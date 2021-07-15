@@ -12,6 +12,9 @@ namespace IO
 
 class FileIOCommonImpl : public FileIOInterface
 {
+   // Friend the static factory function to allow access to the constructor
+   friend eastl::shared_ptr<FileIOInterface> FileIOCommon::CreateFileIO(FileIODescriptor&& p_descriptor);
+
  public:
    static constexpr size_t PageCount = 12u;
    static constexpr size_t MaxDescriptorSetCountPerPage = 32u;
@@ -21,23 +24,26 @@ class FileIOCommonImpl : public FileIOInterface
    FileIOCommonImpl() = delete;
    ~FileIOCommonImpl() final;
 
+   // FileWatcherInterface overrides
    void Open() final;
    void Close() final;
-
    void Read(void* p_data, uint64_t p_sizeInBytes) final;
    uint64_t GetFileSize() final;
 
-   // Friend the static factory function to allow access to the constructor
-   friend eastl::shared_ptr<FileIOInterface> FileIOCommon::CreateFileIO(FileIODescriptor&& p_descriptor);
-
  private:
-   std::ios_base::openmode FileIOFlagsToNative(FileIOFlags p_flags);
-
    FileIOCommonImpl(FileIODescriptor&& p_descriptor);
 
+   // Convert FileIOFlags to the equivalent platform specific flags
+   std::ios_base::openmode FileIOFlagsToNative(FileIOFlags p_flags);
+
+ private:
+   // Path to the file to load
    Util::HashName m_path;
+
+   // IO flags
    FileIOFlags m_fileIOFlags = static_cast<FileIOFlags>(0);
 
+   // Filestream
    std::fstream m_fileStream;
 };
 
