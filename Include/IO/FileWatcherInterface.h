@@ -1,37 +1,39 @@
+#pragma once
+
 #include <Util/HashName.h>
+#include <functional>
 
 namespace Foundation
 {
 namespace IO
 {
-enum class FileIOFlags : uint32_t
+enum class FileWatchEvent : uint32_t
 {
-   FileIOIn = (1 << 0),
-   FileIOOut = (1 << 1),
-   FileIOBinary = (1 << 2),
+   Added = 0u,
+   Removed,
+   Modified,
+   RenamedOld,
+   RenamedNew,
+
+   Count,
+   Invalid = Count
 };
 
-struct FileIODescriptor
+struct FileWatcherDescriptor
 {
-   Util::HashName m_path;
-   FileIOFlags m_fileIOFlags = static_cast<FileIOFlags>(0);
+   Util::HashName m_directory;
+   Util::HashName m_regexPattern;
+
+   std::function<void(const Util::HashName&, FileWatchEvent)> m_callback;
 };
 
-class FileIOInterface
+class FileWatcherInterface
 {
  public:
-   virtual ~FileIOInterface(){};
+   virtual ~FileWatcherInterface(){};
 
-   virtual void Open() = 0;
-   virtual void Close() = 0;
-
-   // Read data
-   virtual void Read(void* p_data, uint64_t p_sizeInBytes) = 0;
-
-   // Get the file size
-   virtual uint64_t GetFileSize() = 0;
-
- private:
+   virtual void Watch() = 0;
+   virtual void Unwatch() = 0;
 };
 } // namespace IO
 } // namespace Foundation
