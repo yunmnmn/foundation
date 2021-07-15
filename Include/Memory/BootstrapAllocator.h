@@ -18,7 +18,8 @@ namespace Memory
 // Uses the TlsfSchema
 class BootstrapAllocator
 {
-   using BootstrapSchema = TlsfSchema<1u, 4u * 102400 * 10u>;
+   // NOTE: Max size allocated from a page is 4 MB
+   using BootstrapSchema = TlsfSchema<12u, 4u * 1024000u>;
 
    BootstrapAllocator() = delete;
 
